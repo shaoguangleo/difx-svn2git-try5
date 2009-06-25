@@ -1,4 +1,4 @@
-AC_INIT([mpifxcorr], [1.5], [Adam Deller <adeller@astro.swin.edu.au>])
+AC_INIT([mpifxcorr], [1.5.0], [Adam Deller <adeller@astro.swin.edu.au>])
 PACKAGE_VERSION=AC_PACKAGE_VERSION
 AC_SUBST([PACKAGE_VERSION])
 AC_SUBST([LIBRARY_VERSION])
