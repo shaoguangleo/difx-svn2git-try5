@@ -252,7 +252,7 @@ if perl:
         run("mv -f libvex." + SHAREDPOSTFIX + " " + libdir)
         run("mv -f libvex.a " + libdir)
     os.chdir("../vexperl")
-    run("perl Makefile.PL PREFIX=" + dirxroot)
+    run("perl Makefile.PL PREFIX=" + difxroot)
     run("make")
     if not noinstall:
         run("make install")
