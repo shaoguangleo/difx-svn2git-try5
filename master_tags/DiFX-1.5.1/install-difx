@@ -175,6 +175,9 @@ libtargets = [["difxio",     difx_version, True,True],
               ["difxmessage",difx_version, True,True],
               ["mark5access",difx_version, True,True]]
 
+utiltargets = [["calcif2",   difx_version, False,True], 
+               ["pulsar/difx2profile", difx_version, False,True]]
+
 apptargets = [["calcserver", difx_version, True,False],
               ["difx2fits",  difx_version, False,True],
               ["vex2difx",   difx_version, True,True]]
@@ -297,6 +300,18 @@ for libtarget in libtargets:
     print
     os.chdir(libtarget[0]  + libtarget[1])
     auto_compile(libtarget[2], libtarget[3], difxroot)
+    os.chdir(thisdir)
+os.chdir(topdir)
+
+##### Make standard (autotool'd) utilities ###############
+os.chdir("utilities")
+thisdir = os.getcwd()
+print "DEBUG: Making in ",thisdir
+for utiltarget in utiltargets:
+    print "************************************"
+    print "Building ", utiltarget[0]
+    os.chdir(utiltarget[0]  + utiltarget[1])
+    auto_compile(utiltarget[2], utiltarget[3], difxroot)
     os.chdir(thisdir)
 os.chdir(topdir)
 
