@@ -40,7 +40,7 @@ if ( $arch == "i386" || $arch == "i686" ) then #32 bit
   #setenv SVNROOT ${SVNROOT}/32
   #setenv IPPROOT ${IPPROOT}/5.1/ia32/
   setenv DIFXBITS 32
-  PREPEND PERL5LIB         ${DIFXROOT}/lib/lib/perl$perlver/site_perl/$perlsver
+  PREPEND PERL5LIB         ${DIFXROOT}/lib/perl/$perlver
   setenv IPPLINKLIBS "$IPPLIB32"
 else if ( $arch == "x86_64" ) then #64 bit
   #echo "Adjusting paths for 64 bit machines"
@@ -48,7 +48,7 @@ else if ( $arch == "x86_64" ) then #64 bit
   #setenv SVNROOT ${SVNROOT}/64
   #setenv IPPROOT ${IPPROOT}/6.0.0.063/em64t/
   setenv DIFXBITS 64
-  PREPEND PERL5LIB         ${DIFXROOT}/perl/lib64/perl$perlver/site_perl/$perlsver/x86_64-linux-thread-multi
+  PREPEND PERL5LIB         ${DIFXROOT}/lib/perl/$perlver
   setenv IPPLINKLIBS "$IPPLIB64"
 else
   echo "Unknown architecture $arch - leaving paths unaltered"

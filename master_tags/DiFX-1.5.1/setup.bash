@@ -65,7 +65,7 @@ then
   #export SVNROOT=${SVNROOT}/32
   #export IPPROOT=${IPPROOT}/5.1/ia32/
   export DIFXBITS=32
-  PrependPath PERL5LIB         ${DIFXROOT}/perl/lib/perl$perlver/site_perl/$perlsver
+  PrependPath PERL5LIB         ${DIFXROOT}/lib/perl/$perlver
   export IPPLINKLIBS="$IPPLIB32"
 elif [ $arch = "x86_64" ] #64 bit
 then
@@ -74,7 +74,7 @@ then
   #export SVNROOT=${SVNROOT}/64
   #export IPPROOT=${IPPROOT}/6.0.0.063/em64t/
   export DIFXBITS=64
-  PrependPath PERL5LIB         ${DIFXROOT}/perl/lib64/perl$perlver/site_perl/$perlsver/x86_64-linux-thread-multi
+  PrependPath PERL5LIB         ${DIFXROOT}/lib/perl/$perlver
   export IPPLINKLIBS="$IPPLIB64"
 else
   echo "Unknown architecture $arch - leaving paths unaltered"
