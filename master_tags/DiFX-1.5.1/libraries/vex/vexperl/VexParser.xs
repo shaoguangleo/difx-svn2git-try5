@@ -1,9 +1,9 @@
 
-#define YYSTYPE PERLSTYPE
+/*#define YYSTYPE PERLSTYPE*/
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-#undef YYSTYPE
+/*#undef YYSTYPE*/
 
 #define block vexblock
 #include <vex.h>
