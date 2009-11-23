@@ -1,7 +1,7 @@
 #### INSTALLATION ##############
-To install DiFX-1.5.1, first go to the area you wish the source code to reside and
-checkout the code with svn co https://svn.atnf.csiro.au/difx/master_tags/DiFX-1.5.1.
-You probably already did that, if you're reading this README.  cd to DiFX-1.5.1, 
+To install DiFX-1.5.2, first go to the area you wish the source code to reside and
+checkout the code with svn co https://svn.atnf.csiro.au/difx/master_tags/DiFX-1.5.2.
+You probably already did that, if you're reading this README.  cd to DiFX-1.5.2, 
 and then:
 
 1) Ensure you have a working installation of IPP and MPI
@@ -16,4 +16,4 @@ area on http://cira.ivec.org/dokuwiki/doku.php/difx/start
 
 #### TESTING ####################
 
-See http://cira.ivec.org/dokuwiki/doku.php/difx/benchmarks
+See http://cira.ivec.org/dokuwiki/doku.php/difx/datasets
