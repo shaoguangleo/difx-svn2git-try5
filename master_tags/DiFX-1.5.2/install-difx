@@ -303,18 +303,6 @@ for libtarget in libtargets:
     os.chdir(thisdir)
 os.chdir(topdir)
 
-##### Make standard (autotool'd) utilities ###############
-os.chdir("utilities")
-thisdir = os.getcwd()
-print "DEBUG: Making in ",thisdir
-for utiltarget in utiltargets:
-    print "************************************"
-    print "Building ", utiltarget[0]
-    os.chdir(utiltarget[0]  + utiltarget[1])
-    auto_compile(utiltarget[2], utiltarget[3], difxroot)
-    os.chdir(thisdir)
-os.chdir(topdir)
-
 ##### Make standard (autotool'd) applications ############
 os.chdir("applications")
 thisdir = os.getcwd()
@@ -347,6 +335,18 @@ run("make")
 if not noinstall:
     run("make install")
     run("cp -f src/*.h " + incdir)
+os.chdir(topdir)
+
+##### Make standard (autotool'd) utilities ###############
+os.chdir("utilities")
+thisdir = os.getcwd()
+print "DEBUG: Making in ",thisdir
+for utiltarget in utiltargets:
+    print "************************************"
+    print "Building ", utiltarget[0]
+    os.chdir(utiltarget[0]  + utiltarget[1])
+    auto_compile(utiltarget[2], utiltarget[3], difxroot)
+    os.chdir(thisdir)
 os.chdir(topdir)
 
 if (force and not errors == []):
