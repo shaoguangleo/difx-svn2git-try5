@@ -4,6 +4,7 @@ Version 1.0.2
 * Improved printing in corrparams, added tolerance for clock date detection
 * Enable strict parsing by default
 * Add deltaClock and deltaClockRate
+* Further fix to generated flags when an antenna is not in a job
 * This is the version for DiFX-1.5.2
 
 Version 1.0.1
