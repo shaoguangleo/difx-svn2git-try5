@@ -1,5 +1,9 @@
 calcif2
 ~~~~~~~
+Version 1.2
+* Warn when NaN or Inf delays are made
+* Version for DiFX-1.5.2
+
 Version 1.1
 * Fix bug: didn't respect polynomial order/increment from command line
 * Version for DiFX-1.5.1
