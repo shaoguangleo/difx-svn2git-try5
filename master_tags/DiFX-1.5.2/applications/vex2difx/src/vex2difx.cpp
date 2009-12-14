@@ -43,7 +43,7 @@
 
 const string program("vex2difx");
 const string version("1.0.2");
-const string verdate("20091210");
+const string verdate("20091214");
 const string author("Walter Brisken");
 
 
@@ -281,13 +281,14 @@ void genJobs(vector<VexJob> &Js, const VexJobGroup &JG, VexData *V, const CorrPa
 	for(t = breaks.begin(); t != breaks.end(); t++)
 	{
 		VexInterval jobTimeRange(start, *t);
+
 		if(jobTimeRange.duration() > P->minLength)
 		{
 			JG.createJobs(Js, jobTimeRange, V, P->maxLength, P->maxSize);
 		}
 		else
 		{
-			cerr << "Warning: skipping short job of " << (jobTimeRange.duration()*86400.0) << " seconds duration." << endl;
+			cerr << "Warning: skipping short job of " << (jobTimeRange.duration()*86400.0) << " seconds duration.  Actual time range was " << jobTimeRange << endl;
 		}
 		start = *t;
 	}
