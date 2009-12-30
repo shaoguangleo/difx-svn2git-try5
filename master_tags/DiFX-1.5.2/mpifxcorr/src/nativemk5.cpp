@@ -125,6 +125,7 @@ NativeMk5DataStream::NativeMk5DataStream(Configuration * conf, int snum,
 	lastrate = 0.0;
 	nrate = 0;
 	nomoredata = false;
+	nfill = ninvalid = ngood = 0;
 	sendMark5Status(MARK5_STATE_OPEN, 0, 0, 0.0, 0.0);
 }
 
@@ -201,6 +202,27 @@ NativeMk5DataStream::~NativeMk5DataStream()
 		delete_mark5_stream(mark5stream);
 	}
 
+	if(ngood == 0)
+	{
+		cerror << startl << "All data from this module was discarded: ninvalid=" << ninvalid << " nfill=" << nfill << ".  Please consider reading the module directory again and investigating the module health" << endl;
+		sendMark5Status(MARK5_STATE_ERROR, 0, 0, 0.0, 0.0);
+		nError++;
+	}
+	else if(ninvalid + nfill > ngood)
+	{
+		cerror << startl << "Most of data from this module was discarded: ninvalid=" << ninvalid << " nfill=" << nfill << " ngood=" << ngood << ".  Please consider  reading the module directory again and investigating the module health" << endl;
+		sendMark5Status(MARK5_STATE_ERROR, 0, 0, 0.0, 0.0);
+		nError++;
+	}
+	else if(9*(ninvalid + nfill) >= ngood)
+	{
+		cwarn << startl << "10 percent or more of the data from this module was discarded: ninvalid=" << ninvalid << " nfill=" << nfill << " ngood=" <<     ngood << "." << endl;
+	}
+	else
+	{
+		cinfo << startl << "Data recovery statistics: ninvalid=" << ninvalid << " nfill=" << nfill << " ngood=" <<     ngood << "." << endl;
+	}
+
 	if(nError == 0)
 	{
 #ifdef HAVE_DIFXMESSAGE
@@ -269,6 +291,7 @@ void NativeMk5DataStream::initialiseFile(int configindex, int fileindex)
 	{
 		delete_mark5_stream(mark5stream);
 	}
+	cinfo << startl << "initialiseFile format=" << formatname << endl;
 	mark5stream = new_mark5_stream(
 	  new_mark5_stream_unpacker(0),
 	  new_mark5_format_generic_from_string(formatname) );
@@ -636,6 +659,7 @@ void NativeMk5DataStream::moduleToMemory(int buffersegment)
 	if(data[0] == FILL_PATTERN && data[1] == FILL_PATTERN)
 	{
 		filltime++;
+		nfill++;
 		// use Brian Kernighan's bit counting trick to see if invalidtime is a power of 2 
 		if((filltime & (filltime-1)) == 0)
 		{
@@ -650,6 +674,7 @@ void NativeMk5DataStream::moduleToMemory(int buffersegment)
 	else if((sec % 86400) != sec2 || fabs(ns - readnanoseconds) > 0.5)
 	{
 		invalidtime++;
+		ninvalid++;
 		invalidstart = readpointer;
 		bufferinfo[buffersegment].validbytes = 0;
 		// use Brian Kernighan's bit counting trick to see if invalidtime is a power of 2 
@@ -665,6 +690,7 @@ void NativeMk5DataStream::moduleToMemory(int buffersegment)
 	}
 	else
 	{
+		ngood++;
 		filltime = 0;
 		invalidtime = 0;
 	}
