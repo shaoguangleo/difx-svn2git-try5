@@ -87,9 +87,9 @@ void resetAccumulator(Accumulator *A)
 		A->weightMin[i] = 1000.0;
 		A->weightMax[i] = 0.0;
 		A->weightSum[i] = 0.0;
+		A->nRec[i] = 0;
 	}
 	A->mjdStart = 0;
-	memset(A->nRec, 0, A->nBBC*sizeof(int));
 }
 
 Accumulator *newAccumulatorArray(Sniffer *S, int n)
@@ -740,7 +740,7 @@ static int dump(Sniffer *S, Accumulator *A, double mjd)
 				rate);
 
 			fprintf(S->apc, " %4d %6.4f %10.4f %10.6f", 
-				specChan, 
+				specChan+1, 
 				2.0*specAmp/(A->weightSum[bbc]*S->nChan), 
 				specPhase, 
 				specRate);
@@ -828,7 +828,9 @@ int feedSnifferFITS(Sniffer *S, const struct UVrow *data)
 
 	A = &(S->accum[a1][a2]);
 
-	if(mjd > A->mjdMax || A->sourceId != sourceId)
+	index = (mjd - A->mjdStart)/(S->deltaT/86400.0);
+
+	if(index >= A->nTime || mjd > A->mjdMax || A->sourceId != sourceId)
 	{
 		dump(S, A, mjd);
 		resetAccumulator(A);
@@ -844,7 +846,7 @@ int feedSnifferFITS(Sniffer *S, const struct UVrow *data)
 
 	if(index < 0 || index >= A->nTime)
 	{
-		fprintf(stderr, "Developer Error: Sniffer: bad time index = %d\n", index);
+		fprintf(stderr, "Developer Error: Sniffer: bad time index=%d a1=%d a2=%d A->nTime=%d mjd=%15.9f mjdStart=%15.9f\n", index, a1, a2, A->nTime, mjd, A->mjdStart);
 		return -1;
 	}
 
