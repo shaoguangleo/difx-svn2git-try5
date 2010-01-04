@@ -202,7 +202,7 @@ NativeMk5DataStream::~NativeMk5DataStream()
 		delete_mark5_stream(mark5stream);
 	}
 
-	if(ngood == 0)
+	if(ngood == 0 && ninvalid + nfill > 0)
 	{
 		cerror << startl << "All data from this module was discarded: ninvalid=" << ninvalid << " nfill=" << nfill << ".  Please consider reading the module directory again and investigating the module health" << endl;
 		sendMark5Status(MARK5_STATE_ERROR, 0, 0, 0.0, 0.0);
@@ -210,13 +210,14 @@ NativeMk5DataStream::~NativeMk5DataStream()
 	}
 	else if(ninvalid + nfill > ngood)
 	{
-		cerror << startl << "Most of data from this module was discarded: ninvalid=" << ninvalid << " nfill=" << nfill << " ngood=" << ngood << ".  Please consider  reading the module directory again and investigating the module health" << endl;
+		cerror << startl << "Most of the data from this module was discarded: ninvalid=" << ninvalid << " nfill=" << nfill << " ngood=" << ngood << ".  Please consider reading the module directory again and investigating the module health" << endl;
 		sendMark5Status(MARK5_STATE_ERROR, 0, 0, 0.0, 0.0);
 		nError++;
 	}
 	else if(9*(ninvalid + nfill) >= ngood)
 	{
-		cwarn << startl << "10 percent or more of the data from this module was discarded: ninvalid=" << ninvalid << " nfill=" << nfill << " ngood=" <<     ngood << "." << endl;
+		int f = 100*(ninvalid + nfill)/(ninvalid + nfill + ngood);
+		cwarn << startl << f << " percent of the data from this module was discarded: ninvalid=" << ninvalid << " nfill=" << nfill << " ngood=" <<     ngood << "." << endl;
 	}
 	else
 	{
@@ -636,6 +637,26 @@ void NativeMk5DataStream::moduleToMemory(int buffersegment)
 			{
 				cinfo << startl << "XLROpen() success!" << endl;
 			}
+
+			xlrRC = XLRSetBankMode(xlrDevice, SS_BANKMODE_NORMAL);
+			if(xlrRC != XLR_SUCCESS)
+			{
+				cerror << startl << "Cannot put Mark5 unit in bank mode" << endl;
+			}
+
+			xlrRC = XLRSetOption(xlrDevice, SS_OPT_SKIPCHECKDIR);
+			if(xlrRC == XLR_SUCCESS)
+			{
+				xlrRC = XLRSetOption(xlrDevice, SS_OPT_REALTIMEPLAYBACK);
+			}
+			if(xlrRC == XLR_SUCCESS)
+			{
+				xlrRC = XLRSetFillData(xlrDevice, FILL_PATTERN);
+			}
+			if(xlrRC != XLR_SUCCESS)
+			{
+				cerror << startl << "Cannot set Mark5 data replacement mode / fill pattern" << endl;
+			}
 		}
 	}
 
@@ -656,14 +677,15 @@ void NativeMk5DataStream::moduleToMemory(int buffersegment)
 	mark5stream->frame = 0;
 	sec2 = (readseconds + corrstartseconds) % 86400;
 
-	if(data[0] == FILL_PATTERN && data[1] == FILL_PATTERN)
+	if( (data[1]   == FILL_PATTERN && data[2]   == FILL_PATTERN) ||
+	    (data[998] == FILL_PATTERN && data[999] == FILL_PATTERN) )
 	{
 		filltime++;
 		nfill++;
 		// use Brian Kernighan's bit counting trick to see if invalidtime is a power of 2 
-		if((filltime & (filltime-1)) == 0)
+		if(filltime > 5 && (filltime & (filltime-1)) == 0)
 		{
-			cwarn << startl << filltime << " consecutive fill patterns at time" << sec2 << "," << readnanoseconds << endl ;
+			cwarn << startl << filltime << " consecutive fill patterns at time " << sec2 << "," << readnanoseconds << endl ;
 		}
 
 		if(filltime > 1)
