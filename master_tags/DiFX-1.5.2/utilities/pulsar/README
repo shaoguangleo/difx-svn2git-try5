@@ -5,7 +5,7 @@ aclocal
 autoconf
 autoheader
 automake -a
-./configure --prefix=${DIFXROOT} CXX=mpicxx
+./configure --prefix=${DIFX_PREFIX} CXX=mpicxx
 make
 # (su root?)
 make install
