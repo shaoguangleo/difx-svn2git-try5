@@ -315,7 +315,7 @@ for apptarget in apptargets:
     print "Building ", apptarget[0]
     print
     os.chdir(apptarget[0]  + apptarget[1])
-    auto_compile(apptarget[2], apptarget[3], difxroot, libtarget[4])
+    auto_compile(apptarget[2], apptarget[3], difxroot, apptarget[4])
     os.chdir(thisdir)
 os.chdir(topdir)
 
