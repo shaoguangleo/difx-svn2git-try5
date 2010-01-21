@@ -4,6 +4,8 @@ Version 1.5.2, 2009 Nov 23
 * Improved real-time correlation monitoring
 * Primitive support for single-thread VDIF
 * Support for unmodulated VLBA format (called VLBN internally)
+* A bug affecting time calculations in Datastream when the read increment (nsinc) was >1 sec was fixed
+* A rare case where time offsets could be calculated incorrectly in NativeMk5 was fixed
 
 Version 1.5.1, 2009 Sep 8
 ~~~~~~~~~~~~~~~~~~~~~~~~~
