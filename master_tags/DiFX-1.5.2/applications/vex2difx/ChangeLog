@@ -5,6 +5,7 @@ Version 1.0.2
 * Enable strict parsing by default
 * Add deltaClock and deltaClockRate
 * Further fix to generated flags when an antenna is not in a job
+* The maximum gap between jobs (maxGap) is now calculated correctly
 * This is the version for DiFX-1.5.2
 
 Version 1.0.1
