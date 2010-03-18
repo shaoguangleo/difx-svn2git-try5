@@ -347,9 +347,13 @@ print "DEBUG: Making in ",thisdir
 for utiltarget in utiltargets:
     print "************************************"
     print "Building ", utiltarget[0]
-    os.chdir(utiltarget[1]  + '/' + utiltarget[0])
+    if (utiltarget[1] == ''):
+        os.chdir(utiltarget[0])
+    else:
+        os.chdir(utiltarget[1]  + '/' + utiltarget[0])
     auto_compile(utiltarget[2], utiltarget[3], difxroot, utiltarget[4])
     os.chdir(thisdir)
+
 os.chdir(topdir)
 
 if (force and not errors == []):
