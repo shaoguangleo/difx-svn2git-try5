@@ -15,9 +15,16 @@ CXX = $(MPICXX) -g -Wall
 CPPFLAGS =  -D__PWD=\"$$PWD\"
 F77 = g77
 
+ifeq ($(OSTYPE), darwin)
+  IPPLIB=$(IPPROOT)/Libraries
+  PGPLOTLIBS = -lcpgplot -lpgplot 
+else
+  IPPLIB=$(IPPROOT)/sharedlib
+  PGPLOTLIBS = -lcpgplot -lpgplot -lX11 -lpng
+endif
+
 INCS = -I$(DIFXROOT)/include/ -I$(IPPROOT)/include 
-LIBS =  -L$(DIFXROOT)/lib/ -L$(IPPROOT)/sharedlib -lmpifxcorr -lmark5access -ldifxmessage $(IPPLINKLIBS) 
-PGPLOTLIBS = -lcpgplot -lpgplot -lX11 -lpng 
+LIBS =  -L$(DIFXROOT)/lib/ -L$(IPPLIB) -lmpifxcorr -lmark5access -ldifxmessage $(IPPLINKLIBS) 
 
 difx_monitor : difx_monitor.cpp monserver.cpp monserver.h
 	$(CXX) $(CPPFLAGS) $(INCS) -o $@ $^ $(LIBS) $(PGPLOTLIBS)
