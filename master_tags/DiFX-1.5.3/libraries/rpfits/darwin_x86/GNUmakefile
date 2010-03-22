@@ -15,10 +15,11 @@ CFLAGS  := -g -O -Wall
 ifdef USEGFORTRAN
   FC      := gfortran
   FFLAGS  := -g -O -fno-automatic -Wall
-  LDFLAGS := -lg2c
+  LDFLAGS := -lgfortran
 else
   FC      := g77
   FFLAGS  := -g -O -fno-automatic -Wall -Wimplicit -Wno-globals
+  LDFLAGS := -lg2c
 endif
 
 # Use these definitions (in place of those above) to compile with gfortran.
