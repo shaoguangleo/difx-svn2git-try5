@@ -327,21 +327,6 @@ for libtarget in libtargets:
     os.chdir(thisdir)
 os.chdir(topdir)
 
-##### Make standard (autotool'd) applications ############
-os.chdir("applications")
-thisdir = os.getcwd()
-for apptarget in apptargets:
-    print
-    print
-    print "************************************"
-    print "Building ", apptarget[0]
-    print
-    os.chdir(apptarget[0]  + '/' + apptarget[1])
-    auto_compile(apptarget[2], apptarget[3], apptarget[4], difxroot, 
-                 apptarget[5])
-    os.chdir(thisdir)
-os.chdir(topdir)
-
 ##### Make mpifxcorr #####################################
 print
 print "************************************"
@@ -362,6 +347,21 @@ run("make")
 if not noinstall:
     run("make install")
     run("cp -f src/*.h " + incdir)
+os.chdir(topdir)
+
+##### Make standard (autotool'd) applications ############
+os.chdir("applications")
+thisdir = os.getcwd()
+for apptarget in apptargets:
+    print
+    print
+    print "************************************"
+    print "Building ", apptarget[0]
+    print
+    os.chdir(apptarget[0]  + '/' + apptarget[1])
+    auto_compile(apptarget[2], apptarget[3], apptarget[4], difxroot, 
+                 apptarget[5])
+    os.chdir(thisdir)
 os.chdir(topdir)
 
 ##### Make standard (autotool'd) utilities ###############
