@@ -15,7 +15,7 @@ CXX = $(MPICXX) -g -Wall
 CPPFLAGS =  -D__PWD=\"$$PWD\"
 F77 = g77
 
-ifeq ($(OSTYPE), darwin)
+ifeq ($(DIFXOS), darwin)
   IPPLIB=$(IPPROOT)/Libraries
   PGPLOTLIBS = -lcpgplot -lpgplot 
 else
