@@ -11,7 +11,7 @@ def main():
 Install DiFX
 
 Usage:
-    install-difx [-fh] [--force] [--help] [--noinstall] [--reconf] [--g77] [--clean] [--norpfits] [--perl]
+    install-difx [-fh] [--force] [--help] [--noinstall] [--reconf] [--g77] [--clean] [--norpfits] [--perl] [--withmonitor]
 
 Builds and installs mpifxcorr and associated tools.
 
@@ -37,6 +37,8 @@ Options:
 
    --norpfits      Don't build rpfits
 
+   --withmonitor   Try to build the difx_monitor application (requires pgplot)
+
    --perl          Install some non-standard perl utilities (deprecated)
 
    --clean         Run make clean for all components
@@ -51,7 +53,7 @@ Options:
 #  * Make sure it is documented in main.__doc__
 ###############################################################################
 try:
-    opts, args = getopt.gnu_getopt(sys.argv[1:], "fh", ["help", "force", "reconf", "noinstall", "mk5daemon", "g77", "clean", "norpfits", "perl"])
+    opts, args = getopt.gnu_getopt(sys.argv[1:], "fh", ["help", "force", "reconf", "noinstall", "mk5daemon", "g77", "clean", "norpfits", "perl", "withmonitor"])
 except getopt.GetoptError, err:
     print err
     print main.__doc__
@@ -71,6 +73,7 @@ gfortran = True
 rpfits = True
 perl = False
 doclean = False
+domonitor = False
 
 # read arguments
 
@@ -94,6 +97,8 @@ if len(opts) > 0:
             perl = True
         if o == "--norpfits":
             rpfits = False
+        if o == "--withmonitor":
+            domonitor = True
         if o == "--clean":
             doclean = True
 
@@ -179,7 +184,8 @@ libtargets = [["difxio",     difx_version, True,True,True,False],
               ["mark5access",difx_version, True,True,True,False]]
 
 utiltargets = [["calcif2",   difx_version, True,False,True,False], 
-               ["pulsar/difx2profile", difx_version, True,False,True,True]]
+               ["pulsar/difx2profile", difx_version, True,False,True,True],
+               ["vis2screen",difx_version, True,False,False,True]]
 
 apptargets = [["calcserver", difx_version, True,True,False,False],
               ["difx2fits",  difx_version, True,False,True,False],
@@ -353,6 +359,8 @@ os.chdir(topdir)
 os.chdir("applications")
 thisdir = os.getcwd()
 for apptarget in apptargets:
+    if apptarget[0] == "difx_monitor" and not domonitor:
+        continue #Skip difx_monitor unless told to do it
     print
     print
     print "************************************"

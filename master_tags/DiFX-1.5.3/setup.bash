@@ -10,16 +10,21 @@ export IPPROOT=/opt/intel/ipp/5.2/ia32
 ####### COMPILER ############################
 export MPICXX=/usr/bin/mpicxx
 
+####### USE GFORTRAN IN PREFERENCE TO G77? ##
+####### Comment out if not desired ##########
+export USEGFORTRAN="yes"
+
 ####### IPP libraries needed for linking #############
-## Alternate lines may be needed for old versions ####
-## of IPP (<=4 for 32bit, <=5 for 64 bit #############
-IPPLIB32="-lipps -lguide -lippvm -lippcore"
-IPPLIB64="-lippsem64t -lguide -lippvmem64t -liomp5 -lippcoreem64t"
-## Uncomment the following for old 32 bit IPP
+IPPLIB32="-lipps -lippvm -lippcore"
+IPPLIB64="-lippsem64t -lippvmem64t -lippcoreem64t"
+#Comment out the following for very new IPP (version > 6)
+#IPPLIB32="${IPPLIB32} -lguide"
+#IPPLIB64="${IPPLIB64} -lguide"
+#Comment out the following for older (pre version 6) IPP
+IPPLIB32="${IPPLIB32} -liomp5"
+IPPLIB64="${IPPLIB64} -liomp5"
+#Uncomment the following for very old (pre version 5) IPP
 #PrependPath LD_LIBRARY_PATH  ${IPPROOT}/sharedlib/linux
-## Uncomment the following (and comment other IPPLIB64 line)
-## for old 64 bit IPP
-#IPPLIB64="-lippsem64t -lguide -lippvmem64t -lippcoreem64t"
 
 ####### PERL VERSION/SUBVERSION #############
 perlver="5"
@@ -38,13 +43,18 @@ export CALC_SERVER=swc000
 ####### No User configurable values below here
 
 ####### Operating System, use $OSTYPE
-if [ $OSTYPE = "darwin" -o $OSTYPE = "linux" -o $OSTYPE = "linux-gnu" ] 
+if [ $OSTYPE = "darwin" -o $OSTYPE = "darwin9.0" -o $OSTYPE = "linux" -o $OSTYPE = "linux-gnu" ] 
 then
   OS=$OSTYPE
 else
   echo "Warning unsupported O/S $OSTYPE"
   exit 1
 fi
+if [ $OSTYPE = "darwin9.0" ]
+then
+  OS="darwin"
+fi
+export DIFXOS=$OS
 
 PrependPath()
 {
@@ -90,7 +100,7 @@ fi
 
 ####### LIBRARY/EXECUTABLE PATHS ############
 PrependPath PATH             ${DIFXROOT}/bin
-if [ $OS = "darwin" ] 
+if [ $DIFXOS = "darwin" ] 
 then
   PrependPath DYLD_LIBRARY_PATH  ${DIFXROOT}/lib
   PrependPath DYLD_LIBRARY_PATH  ${PGPLOTDIR}

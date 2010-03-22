@@ -12,16 +12,21 @@ setenv IPPROOT /opt/intel/ipp/5.2/ia32
 ####### COMPILER ############################
 setenv MPICXX /usr/bin/mpicxx
 
+####### USE GFORTRAN IN PREFERENCE TO G77? ##
+####### Comment out if not desired ##########
+setenv USEGFORTRAN "yes"
+
 ####### IPP libraries needed for linking #############
-## Alternate lines may be needed for old versions ####
-## of IPP (<=4 for 32bit, <=5 for 64 bit #############
-set IPPLIB32="-lipps -lguide -lippvm -lippcore"
-set IPPLIB64="-lippsem64t -lguide -lippvmem64t -liomp5 -lippcoreem64t"
-## Uncomment the following for old 32 bit IPP
+set IPPLIB32="-lipps -lippvm -lippcore"
+set IPPLIB64="-lippsem64t -lippvmem64t -lippcoreem64t"
+#Comment out the following for very new IPP (version > 6)
+#set IPPLIB32="${IPPLIB32} -lguide"
+#set IPPLIB64="${IPPLIB64} -lguide"
+#Comment out the following for older (pre version 6) IPP
+set IPPLIB32="${IPPLIB32} -liomp5"
+set IPPLIB64="${IPPLIB64} -liomp5"
+#Uncomment the following for very old (pre version 5) IPP
 #PREPEND LD_LIBRARY_PATH  ${IPPROOT}/sharedlib/linux
-## Uncomment the following (and comment other IPPLIB64 line)
-## for old 64 bit IPP
-#set IPPLIB64="-lippsem64t -lguide -lippvmem64t -lippcoreem64t"
 
 ####### PERL VERSION/SUBVERSION #############
 set perlver="5"
@@ -41,12 +46,19 @@ setenv CALC_SERVER swc000
 
 ####### Operating System, use $OSTYPE
 
-if ( $OSTYPE == "darwin" || $OSTYPE == "linux" || $OSTYPE == "linux-gnu") then
+if ( $OSTYPE == "darwin" || $OSTYPE == "darwin9.0" || $OSTYPE == "linux" || $OSTYPE == "linux-gnu") then
   set OS=$OSTYPE
 else
   echo "Warning supported O/S $OSTYPE";
   exit 1
 endif
+
+if ( $OSTYPE = "darwin9.0" )
+then
+  OS="darwin"
+fi
+setenv DIFXOS $OS
+
 
 ####### 32/64 BIT DEPENDENT MODIFICATIONS ###
 set arch=`uname -m`
@@ -64,7 +76,7 @@ endif
 
 ####### LIBRARY/EXECUTABLE PATHS ############
 PREPEND PATH             ${DIFXROOT}/bin
-if ($OS == "darwin") then
+if ($DIFXOS == "darwin") then
   PREPEND DYLD_LIBRARY_PATH  ${DIFXROOT}/lib
   PREPEND DYLD_LIBRARY_PATH  ${PGPLOTDIR}
   PREPEND DYLD_LIBRARY_PATH  ${IPPROOT}/Libraries
