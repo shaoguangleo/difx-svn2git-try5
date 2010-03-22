@@ -15,7 +15,7 @@ AC_ARG_ENABLE(quiet, [AS_HELP_STRING([--enable-quiet],[disable some verbiage])],
 dnl **********************************************************
 dnl **** Set path for Intel Performance Primitive library ****
 dnl **********************************************************
-if test "$OSTYPE" == "darwin"; then
+if test "$DIFXOS" == "darwin"; then
         ipp_libname="Libraries"
 else
         ipp_libname="sharedlib"
@@ -35,12 +35,12 @@ if test x"$IPPLINKLIBS" != x; then
         IPP_LIBS=$IPP_LIBS" $IPPLINKLIBS"
 else
 	if test "$DIFXBITS" == "32"; then
-           IPP_LIBS=$IPP_LIBS" -lipps -lguide -lippvm -lippcore"
+           IPP_LIBS=$IPP_LIBS" -lipps -lippvm -lippcore"
 	elif test "$DIFXBITS" == "64"; then
-           IPP_LIBS=$IPP_LIBS" -lippsem64t -lguide -lippvmem64t -liomp5 -lippcoreem64t"
+           IPP_LIBS=$IPP_LIBS" -lippsem64t -lippvmem64t -liomp5 -lippcoreem64t"
 	else
-	   IPP_LIBS=$IPP_LIBS" -lipps -lguide -lippvm"
-           echo "32/64 bit unspecified - assuming 32 bit for IPP"
+	   IPP_LIBS=$IPP_LIBS" -lipps -lippvm -lippcore"
+           echo "32/64 bit unspecified - assuming latest 32 bit for IPP"
         fi
 fi
 dnl **********************************************************
