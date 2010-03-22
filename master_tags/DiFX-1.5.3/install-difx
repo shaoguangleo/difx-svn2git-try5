@@ -110,8 +110,8 @@ def run(cmd):
             raise RuntimeError, "Error running " + cmd + " in " + os.getcwd()
 
 ###### Subroutine to do the compiling of an auto-tool ###
-def auto_compile(dolibtoolize, doautoheader, prefix, dompicxx):
-    if reconf or os.system("autoreconf"):
+def auto_compile(doreconf, dolibtoolize, doautoheader, prefix, dompicxx):
+    if (doreconf and (reconf or os.system("autoreconf"))):
         print "reconfiguring"
         run("aclocal")
         if dolibtoolize:
@@ -174,19 +174,20 @@ if gfortran:
 
 ###### Targets ##########################################
 
-libtargets = [["difxio",     difx_version, True,True,False],
-              ["difxmessage",difx_version, True,True,False],
-              ["mark5access",difx_version, True,True,False]]
+libtargets = [["difxio",     difx_version, True,True,True,False],
+              ["difxmessage",difx_version, True,True,True,False],
+              ["mark5access",difx_version, True,True,True,False]]
 
-utiltargets = [["calcif2",   difx_version, False,True,False], 
-               ["pulsar/difx2profile", difx_version, False,True,True]]
+utiltargets = [["calcif2",   difx_version, True,False,True,False], 
+               ["pulsar/difx2profile", difx_version, True,False,True,True]]
 
-apptargets = [["calcserver", difx_version, True,False,False],
-              ["difx2fits",  difx_version, False,True,False],
-              ["vex2difx",   difx_version, True,True,False]]
+apptargets = [["calcserver", difx_version, True,True,False,False],
+              ["difx2fits",  difx_version, True,False,True,False],
+              ["vex2difx",   difx_version, True,True,True,False],
+              ["difx_monitor", difx_version, False,False,False,False]]
 
 if mk5d:
-    apptargets.append(["mk5daemon", difx_version, False,True])
+    apptargets.append(["mk5daemon", difx_version, True,False,True,False])
 
 if not master_tag:
     os.chdir("..")
@@ -209,6 +210,7 @@ if doclean:
                 os.chdir("libraries/rpfits/"+difx_version+"/linux64/")
         run("make clean")
         os.chdir(topdir)
+
     os.chdir("libraries")
     thisdir = os.getcwd()
     for libtarget in libtargets:
@@ -216,14 +218,29 @@ if doclean:
         os.chdir(libtarget[0] + '/' + libtarget[1])
         run("make clean")
         os.chdir(thisdir)
-    os.chdir("../applications")
+    os.chdir(topdir)
+
+    os.chdir("applications")
     thisdir = os.getcwd()
     for apptarget in apptargets:
         print "**** Cleaning "+apptarget[0]
         os.chdir(apptarget[0] + '/' + apptarget[1])
         run("make clean")
         os.chdir(thisdir)
+
+    os.chdir(topdir)
+    os.chdir("utilities")
+    thisdir = os.getcwd()
+    for utiltarget in utiltargets:
+        print "**** Cleaning "+utiltarget[0]
+        if (utiltarget[1] == ''):
+            os.chdir(utiltarget[0])
+        else:
+            os.chdir(utiltarget[1]  + '/' + utiltarget[0])
+        run("make clean")
+        os.chdir(thisdir)
     os.chdir("../")
+
     sys.exit(0)  # Clean exit
 
 
@@ -246,6 +263,7 @@ if not noinstall:
 
 ##### Compile non-standard libraries ####################
 if perl:
+    print
     print "************************************"
     print "Building vex"
     print
@@ -264,8 +282,7 @@ if perl:
         run("make install")
     os.chdir(topdir)
 
-    print "***DEBUG", os.getcwd()
-
+    print
     print "************************************"
     print "Building Astro Perl"
     print
@@ -277,6 +294,7 @@ if perl:
         os.chdir(topdir)
 
 if rpfits:
+    print
     print "************************************"
     print "Building rpfits"
     print
@@ -298,28 +316,34 @@ if rpfits:
 os.chdir("libraries")
 thisdir = os.getcwd()
 for libtarget in libtargets:
+    print
+    print
     print "************************************"
     print "Building ", libtarget[0]
     print
     os.chdir(libtarget[0]  + '/' + libtarget[1])
-    auto_compile(libtarget[2], libtarget[3], difxroot, libtarget[4])
+    auto_compile(libtarget[2], libtarget[3], libtarget[4], difxroot, 
+                 libtarget[5])
     os.chdir(thisdir)
 os.chdir(topdir)
 
 ##### Make standard (autotool'd) applications ############
 os.chdir("applications")
 thisdir = os.getcwd()
-print "DEBUG: Making in ",thisdir
 for apptarget in apptargets:
+    print
+    print
     print "************************************"
     print "Building ", apptarget[0]
     print
     os.chdir(apptarget[0]  + '/' + apptarget[1])
-    auto_compile(apptarget[2], apptarget[3], difxroot, apptarget[4])
+    auto_compile(apptarget[2], apptarget[3], apptarget[4], difxroot, 
+                 apptarget[5])
     os.chdir(thisdir)
 os.chdir(topdir)
 
 ##### Make mpifxcorr #####################################
+print
 print "************************************"
 print "Making mpifxcorr"
 print
@@ -343,20 +367,23 @@ os.chdir(topdir)
 ##### Make standard (autotool'd) utilities ###############
 os.chdir("utilities")
 thisdir = os.getcwd()
-print "DEBUG: Making in ",thisdir
 for utiltarget in utiltargets:
+    print
+    print
     print "************************************"
     print "Building ", utiltarget[0]
     if (utiltarget[1] == ''):
         os.chdir(utiltarget[0])
     else:
         os.chdir(utiltarget[1]  + '/' + utiltarget[0])
-    auto_compile(utiltarget[2], utiltarget[3], difxroot, utiltarget[4])
+    auto_compile(utiltarget[2], utiltarget[3], libtarget[4], difxroot, 
+                 utiltarget[5])
     os.chdir(thisdir)
-
 os.chdir(topdir)
 
 if (force and not errors == []):
+    print
+    print
     print "************************************"
     print "WARNING: Errors were encountered during installation"
     print
