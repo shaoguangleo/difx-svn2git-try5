@@ -17,7 +17,7 @@ using namespace std;
 
 int main(int argc, const char * argv[]) {
   Configuration * config;
-  int currentconfigindex, freqindex;
+  int freqindex;
   char polpair[3];
   string sourcename;
   ostringstream ss;
@@ -38,25 +38,25 @@ int main(int argc, const char * argv[]) {
     if (config->getNumConfigs()>1) {
       cout << endl << "*********** CONFIG " << iconfig << " ***********" << endl << endl;;
     }
-
+    
 
     cout << "Number of channels " << config->getNumChannels(iconfig) << endl;
     cout << "Integration time  " << config->getIntTime(iconfig) << endl << endl;;
 
     int binloop = 1;
-    if(config->pulsarBinOn(currentconfigindex) && !config->scrunchOutputOn(currentconfigindex))
-      binloop = config->getNumPulsarBins(currentconfigindex);
+    if(config->pulsarBinOn(iconfig) && !config->scrunchOutputOn(iconfig))
+      binloop = config->getNumPulsarBins(iconfig);
 
     for (int i=0;i<config->getNumBaselines();i++) {
-      int ds1index = config->getBDataStream1Index(currentconfigindex, i);
-      int ds2index = config->getBDataStream2Index(currentconfigindex, i);
+      int ds1index = config->getBDataStream1Index(iconfig, i);
+      int ds2index = config->getBDataStream2Index(iconfig, i);
 
-      for(int j=0;j<config->getBNumFreqs(currentconfigindex,i);j++) {
-	freqindex = config->getBFreqIndex(currentconfigindex, i, j);
+      for(int j=0;j<config->getBNumFreqs(iconfig,i);j++) {
+	freqindex = config->getBFreqIndex(iconfig, i, j);
 
 	for(int b=0;b<binloop;b++) {
-	  for(int k=0;k<config->getBNumPolProducts(currentconfigindex, i, j);k++) {
-	    config->getBPolPair(currentconfigindex,i,j,k,polpair);
+	  for(int k=0;k<config->getBNumPolProducts(iconfig, i, j);k++) {
+	    config->getBPolPair(iconfig,i,j,k,polpair);
 	    
 	    cout << setw(3) << prod << ": ";
 
@@ -77,33 +77,33 @@ int main(int argc, const char * argv[]) {
 	}
       }
     }
-  }
 
-  int autocorrwidth = (config->getMaxProducts()>2)?2:1;
-
-  for(int i=0;i<config->getNumDataStreams();i++) {
-    for(int j=0;j<autocorrwidth;j++) {
-     for(int k=0;k<config->getDNumOutputBands(currentconfigindex, i); k++) {
-
-       cout << setw(3) << prod << ": " << left << setw(15) 
-	    << config->getDStationName(currentconfigindex, i) << " " << right;
+    int autocorrwidth = (config->getMaxProducts()>2)?2:1;
+    
+    for(int i=0;i<config->getNumDataStreams();i++) {
+      for(int j=0;j<autocorrwidth;j++) {
+	for(int k=0;k<config->getDNumOutputBands(iconfig, i); k++) {
+	  
+	  cout << setw(3) << prod << ": " << left << setw(15) 
+	       << config->getDStationName(iconfig, i) << " " << right;
        
-       char firstpol = config->getDBandPol(currentconfigindex, i, k);
-       char otherpol = ((firstpol == 'R')?'L':'R');
-       if (j==0)
-	 cout << firstpol << firstpol;
-       else
-	 cout << firstpol << otherpol;
+	  char firstpol = config->getDBandPol(iconfig, i, k);
+	  char otherpol = ((firstpol == 'R')?'L':'R');
+	  if (j==0)
+	    cout << firstpol << firstpol;
+	  else
+	    cout << firstpol << otherpol;
+	  
+	  freqindex = config->getDFreqIndex(iconfig, i, k);
+	  cout <<  " " << config->getFreqTableFreq(freqindex) << " MHz";
+	  
+	  cout << " (" << config->getFreqTableBandwidth(freqindex) << " MHz)";
 
-       freqindex = config->getDFreqIndex(currentconfigindex, i, k);
-       cout <<  " " << config->getFreqTableFreq(freqindex) << " MHz";
-
-       cout << " (" << config->getFreqTableBandwidth(freqindex) << " MHz)";
-
-       cout << endl;
-
-       prod++;
-     }
+	  cout << endl;
+	  
+	  prod++;
+	}
+      }
     }
   }
 }
