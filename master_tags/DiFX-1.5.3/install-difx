@@ -384,7 +384,7 @@ for utiltarget in utiltargets:
         os.chdir(utiltarget[0])
     else:
         os.chdir(utiltarget[1]  + '/' + utiltarget[0])
-    auto_compile(utiltarget[2], utiltarget[3], libtarget[4], difxroot, 
+    auto_compile(utiltarget[2], utiltarget[3], utiltarget[4], difxroot, 
                  utiltarget[5])
     os.chdir(thisdir)
 os.chdir(topdir)
