@@ -4,7 +4,7 @@ TARGETS := difx_monitor monitor_server mon_sample difx_config vcal
 
 all    : $(TARGETS)
 
-clean  : $(TARGETS)
+clean  : 
 	rm -f *.o $^
 
 install: $(TARGETS)
