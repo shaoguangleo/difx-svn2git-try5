@@ -53,10 +53,9 @@ else
   exit 1
 endif
 
-if ( $OSTYPE = "darwin9.0" )
-then
-  OS="darwin"
-fi
+if ( $OSTYPE == "darwin9.0" ) then
+  set OS="darwin"
+endif
 setenv DIFXOS $OS
 
 
