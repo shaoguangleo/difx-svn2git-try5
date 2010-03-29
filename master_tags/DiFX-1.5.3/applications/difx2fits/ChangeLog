@@ -7,6 +7,9 @@ Version 2.6.2
 * Fix usage of RCfreqId
 * Don't fail to set proper .jobmatrix filename when not running sniffer
 * Properly index config table in fitsGM.c
+* Support for sub-band subsets
+* Per antenna quantization bits
+* Slightly better support for X-Y correlations (still probably fails somehow)
 * Version for DiFX-1.5.3
 
 Version 2.6.1
