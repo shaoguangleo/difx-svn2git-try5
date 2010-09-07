@@ -82,27 +82,23 @@ fi
 dnl **********************************************************
 dnl **** Look for RPFITS                                  ****
 dnl **********************************************************
-rpfits_enabled=true
-AC_ARG_WITH(rpfits, [AS_HELP_STRING([--without-rpfits],[Disable rpfits output])])
-if test x"$with_rpfits" = xno; then
-   	rpfits_enabled=false
-else
+rpfits_enabled=false
+AC_ARG_WITH(rpfits, [AS_HELP_STRING([--with-rpfits],[Enable rpfits output])])
+if test x"$with_rpfits" = xyes; then
+   	rpfits_enabled=true
 	PWD=`pwd`
 	AC_CHECK_HEADER([$DIFXROOT/include/RPFITS.h],
 		[AC_DEFINE([HAVE_RPFITS], 1, [1=has RPFITS])],
 		[rpfits_enabled=false])
 fi
 if test ${rpfits_enabled} = true; then
+	echo "RPFITS enabled"
    	RPFITS_CFLAGS="-I$DIFXROOT/include"
 	if test x"$USEGFORTRAN" != "x"; then
 	      RPFITS_LIBS=" -lrpfits -lgfortran"  
 	else
 	      RPFITS_LIBS=" -lrpfits -lg2c"
         fi
-else
-	echo "RPFITS disabled"
-	RPFITS_CFLAGS=""
-	RPFITS_LIBS=""
 fi
 dnl **********************************************************
 
