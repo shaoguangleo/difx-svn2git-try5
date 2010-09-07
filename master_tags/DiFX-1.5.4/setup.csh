@@ -31,6 +31,7 @@ set IPPLIB64="${IPPLIB64} -liomp5"
 ####### PERL VERSION/SUBVERSION #############
 set perlver="5"
 set perlsver="5.8.8"
+PREPEND PERL5LIB         ${DIFXROOT}/share/perl/$perlver
 
 ####### PORTS FOR DIFXMESSAGE ###############
 # Uncomment these to enable DIFX_MESSAGES
@@ -46,28 +47,23 @@ setenv CALC_SERVER swc000
 
 ####### Operating System, use $OSTYPE
 
-if ( $OSTYPE == "darwin" || $OSTYPE == "darwin9.0" || $OSTYPE == "linux" || $OSTYPE == "linux-gnu") then
+if ( $OSTYPE == "darwin" || $OSTYPE == "linux" || $OSTYPE == "linux-gnu") then
   set OS=$OSTYPE
+else if ( $OSTYPE == "darwin9.0" ) then
+  set OS="darwin"
 else
   echo "Warning supported O/S $OSTYPE";
   exit 1
 endif
-
-if ( $OSTYPE == "darwin9.0" ) then
-  set OS="darwin"
-endif
 setenv DIFXOS $OS
-
 
 ####### 32/64 BIT DEPENDENT MODIFICATIONS ###
 set arch=`uname -m`
 if ( $arch == "i386" || $arch == "i686" ) then #32 bit
   setenv DIFXBITS 32
-  PREPEND PERL5LIB         ${DIFXROOT}/lib/perl/$perlver
   setenv IPPLINKLIBS "$IPPLIB32"
 else if ( $arch == "x86_64" ) then #64 bit
   setenv DIFXBITS 64
-  PREPEND PERL5LIB         ${DIFXROOT}/lib/perl/$perlver
   setenv IPPLINKLIBS "$IPPLIB64"
 else
   echo "Unknown architecture $arch - leaving paths unaltered"
