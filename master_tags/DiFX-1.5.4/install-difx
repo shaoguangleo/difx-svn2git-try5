@@ -11,7 +11,7 @@ def main():
 Install DiFX
 
 Usage:
-    install-difx [-fh] [--force] [--help] [--noinstall] [--reconf] [--g77] [--clean] [--norpfits] [--perl] [--withmonitor]
+    install-difx [-fh] [--force] [--help] [--noinstall] [--reconf] [--g77] [--clean] [--rpfits] [--perl] [--withmonitor]
 
 Builds and installs mpifxcorr and associated tools.
 
@@ -35,7 +35,7 @@ Options:
 
    --g77           Use g77, rather than gfortran
 
-   --norpfits      Don't build rpfits
+   --rpfits        Build rpfits
 
    --withmonitor   Try to build the difx_monitor application (requires pgplot)
 
@@ -53,7 +53,7 @@ Options:
 #  * Make sure it is documented in main.__doc__
 ###############################################################################
 try:
-    opts, args = getopt.gnu_getopt(sys.argv[1:], "fh", ["help", "force", "reconf", "noinstall", "mk5daemon", "g77", "clean", "norpfits", "perl", "withmonitor"])
+    opts, args = getopt.gnu_getopt(sys.argv[1:], "fh", ["help", "force", "reconf", "noinstall", "mk5daemon", "g77", "clean", "rpfits", "perl", "withmonitor"])
 except getopt.GetoptError, err:
     print err
     print main.__doc__
@@ -70,7 +70,7 @@ reconf = False
 noinstall = False
 mk5d = False
 gfortran = True
-rpfits = True
+rpfits = False
 perl = False
 doclean = False
 domonitor = False
@@ -95,8 +95,8 @@ if len(opts) > 0:
             gfortran = False
         if o == "--perl":
             perl = True
-        if o == "--norpfits":
-            rpfits = False
+        if o == "--rpfits":
+            rpfits = True
         if o == "--withmonitor":
             domonitor = True
         if o == "--clean":
@@ -190,10 +190,13 @@ utiltargets = [["calcif2",   difx_version, True,False,True,False],
 apptargets = [["calcserver", difx_version, True,True,False,False],
               ["difx2fits",  difx_version, True,False,True,False],
               ["vex2difx",   difx_version, True,True,True,False],
-              ["difx_monitor", difx_version, False,False,False,False]]
+              ["difx2mark4", difx_version, True,True,True,False],
+              ["difxfilterbank", difx_version, True,False,False,True]]
 
 if mk5d:
     apptargets.append(["mk5daemon", difx_version, True,False,True,False])
+if domonitor:
+    apptargets.append(["difx_monitor", difx_version, False,False,False,False])
 
 if not master_tag:
     os.chdir("..")
@@ -220,33 +223,51 @@ if doclean:
     os.chdir("libraries")
     thisdir = os.getcwd()
     for libtarget in libtargets:
-        print "**** Cleaning "+libtarget[0]
-        os.chdir(libtarget[0] + '/' + libtarget[1])
-        run("make clean")
+        targetdir = libtarget[0] + '/' + libtarget[1]
+        if os.path.exists(targetdir):
+            print
+            print "**** Cleaning "+targetdir
+            os.chdir(targetdir)
+            run("make clean")
+        else:
+            print
+            print "**** Skipping "+targetdir
+            print
         os.chdir(thisdir)
-    os.chdir(topdir)
 
+    os.chdir(topdir)
     os.chdir("applications")
     thisdir = os.getcwd()
     for apptarget in apptargets:
-        print "**** Cleaning "+apptarget[0]
-        os.chdir(apptarget[0] + '/' + apptarget[1])
-        run("make clean")
+        targetdir = apptarget[0] + '/' + apptarget[1]
+        if os.path.exists(targetdir):
+            print
+            print "**** Cleaning "+targetdir
+            os.chdir(targetdir)
+            run("make clean")
+        else:
+            print
+            print "**** Skipping "+targetdir
+            print
         os.chdir(thisdir)
 
     os.chdir(topdir)
     os.chdir("utilities")
     thisdir = os.getcwd()
     for utiltarget in utiltargets:
-        print "**** Cleaning "+utiltarget[0]
-        if (utiltarget[1] == ''):
-            os.chdir(utiltarget[0])
+        targetdir = utiltarget[1] + '/' + utiltarget[0]
+        if os.path.exists(targetdir):
+            print
+            print "**** Cleaning "+targetdir
+            os.chdir(targetdir)
+            run("make clean")
         else:
-            os.chdir(utiltarget[1]  + '/' + utiltarget[0])
-        run("make clean")
+            print
+            print "**** Skipping "+targetdir
+            print
         os.chdir(thisdir)
-    os.chdir("../")
 
+    os.chdir(topdir)
     sys.exit(0)  # Clean exit
 
 
@@ -322,14 +343,19 @@ if rpfits:
 os.chdir("libraries")
 thisdir = os.getcwd()
 for libtarget in libtargets:
-    print
-    print
-    print "************************************"
-    print "Building ", libtarget[0]
-    print
-    os.chdir(libtarget[0]  + '/' + libtarget[1])
-    auto_compile(libtarget[2], libtarget[3], libtarget[4], difxroot, 
-                 libtarget[5])
+    targetdir = libtarget[0]  + '/' + libtarget[1] 
+    if os.path.exists(targetdir):
+        print
+        print
+        print "************************************"
+        print "Building ", targetdir
+        print
+        os.chdir(targetdir)
+        auto_compile(libtarget[2], libtarget[3], libtarget[4], difxroot, libtarget[5])
+    else:
+        print
+        print "******* Skipping "+targetdir
+        print
     os.chdir(thisdir)
 os.chdir(topdir)
 
@@ -346,8 +372,8 @@ run("autoconf")
 run("autoheader")
 run("automake")
 rpfitsopt = ''
-if not rpfits:
-    rpfitsopt = ' --without-rpfits '
+if rpfits:
+    rpfitsopt = ' --with-rpfits '
 run("./configure CXX=" + mpicxx + rpfitsopt + " --prefix=" + difxroot)
 run("make")
 if not noinstall:
@@ -359,16 +385,19 @@ os.chdir(topdir)
 os.chdir("applications")
 thisdir = os.getcwd()
 for apptarget in apptargets:
-    if apptarget[0] == "difx_monitor" and not domonitor:
-        continue #Skip difx_monitor unless told to do it
-    print
-    print
-    print "************************************"
-    print "Building ", apptarget[0]
-    print
-    os.chdir(apptarget[0]  + '/' + apptarget[1])
-    auto_compile(apptarget[2], apptarget[3], apptarget[4], difxroot, 
-                 apptarget[5])
+    targetdir = apptarget[0]  + '/' + apptarget[1] 
+    if os.path.exists(targetdir):
+        print
+        print
+        print "************************************"
+        print "Building ", apptarget[0]
+        print
+        os.chdir(targetdir)
+        auto_compile(apptarget[2], apptarget[3], apptarget[4], difxroot, apptarget[5])
+    else:
+        print
+        print "******* Skipping "+targetdir
+        print
     os.chdir(thisdir)
 os.chdir(topdir)
 
@@ -376,16 +405,21 @@ os.chdir(topdir)
 os.chdir("utilities")
 thisdir = os.getcwd()
 for utiltarget in utiltargets:
-    print
-    print
-    print "************************************"
-    print "Building ", utiltarget[0]
     if (utiltarget[1] == ''):
-        os.chdir(utiltarget[0])
+        targetdir = utiltarget[0]
     else:
-        os.chdir(utiltarget[1]  + '/' + utiltarget[0])
-    auto_compile(utiltarget[2], utiltarget[3], utiltarget[4], difxroot, 
-                 utiltarget[5])
+        targetdir= utiltarget[1]  + '/' + utiltarget[0]
+    if os.path.exists(targetdir):
+        print
+        print
+        print "************************************" 
+        print "Building ", utiltarget[0]
+        os.chdir(targetdir)
+        auto_compile(utiltarget[2], utiltarget[3], utiltarget[4], difxroot, utiltarget[5])
+    else:
+        print
+        print "******* Skipping "+targetdir
+        print
     os.chdir(thisdir)
 os.chdir(topdir)
 
