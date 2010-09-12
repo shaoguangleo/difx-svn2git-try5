@@ -75,7 +75,10 @@ static int mark5_stream_file_fill(struct mark5_stream *ms)
 	
 	while(n < F->fetchsize)
 	{
-		close(F->in);
+		if(F->in != 0)
+		{
+			close(F->in);
+		}
 		F->in = 0;
 		F->curfile++;
 		strncpy(fn, F->files[F->curfile], 64);
@@ -144,7 +147,10 @@ static int mark5_stream_file_init(struct mark5_stream *ms)
 	F->end = 0;
 	F->fetchsize = 0;
 
-	lseek64(F->in, F->offset, SEEK_SET);
+	if(F->offset > 0)
+	{
+		lseek64(F->in, F->offset, SEEK_SET);
+	}
 	F->buffer = (uint8_t *)calloc(1, F->buffersize);
 	ms->datawindow = F->buffer;
 	ms->datawindowsize = F->buffersize;
@@ -152,6 +158,8 @@ static int mark5_stream_file_init(struct mark5_stream *ms)
 	v = read(F->in, F->buffer, F->buffersize);
 	if(v < F->buffersize)
 	{
+		fprintf(stderr, "mark5_stream_file_init: Initial read of %d bytes failed.  %d bytes actually read\n", F->buffersize, v);
+
 		return -1;
 	}
 
@@ -287,7 +295,14 @@ struct mark5_stream_generic *new_mark5_stream_file(const char *filename,
 	int in;
 	int err;
 
-	in = open64(filename, O_RDONLY);
+	if(strcmp(filename, "-") == 0)
+	{
+		in = 0;	/* stdin */
+	}
+	else
+	{
+		in = open64(filename, O_RDONLY);
+	}
 
 	if(in < 0)
 	{
@@ -310,12 +325,21 @@ struct mark5_stream_generic *new_mark5_stream_file(const char *filename,
 		sizeof(struct mark5_stream_generic));
 	F = (struct mark5_stream_file *)calloc(1,
 		sizeof(struct mark5_stream_file));
-	strcpy(F->files[0], filename);
 
 	F->in = in;
-	F->filesize = fileStatus.st_size;
+	if(in == 0)
+	{
+		F->filesize = 1LL<<61;
+		F->buffersize = 1<<17;
+		strcpy(F->files[0], "<stdin>");
+	}
+	else
+	{
+		F->filesize = fileStatus.st_size;
+		F->buffersize = F->filesize > 1<<20 ? 1<<20 : F->filesize;
+		strcpy(F->files[0], filename);
+	}
 	F->nfiles = 1;
-	F->buffersize = F->filesize > 1<<20 ? 1<<20 : F->filesize;
 	F->offset = offset;
 
 	V->init_stream = mark5_stream_file_init;
