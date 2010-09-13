@@ -43,7 +43,7 @@ int usage(const char *pgm)
 
 int conf(float ***data, struct mark5_stream **ms, const char *format, int samples, int os)
 {
-	char fmt[100];
+	char fmt[MARK5_STREAM_ID_LENGTH];
 	int i, j;
 
 	if(os == 1)
@@ -52,7 +52,7 @@ int conf(float ***data, struct mark5_stream **ms, const char *format, int sample
 	}
 	else
 	{
-		sprintf(fmt, "%s/%d", format, os);
+		sprintf(fmt, MARK5_STREAM_ID_LENGTH, "%s/%d", format, os);
 	}
 	printf("Initialize %s\n", fmt);
 
