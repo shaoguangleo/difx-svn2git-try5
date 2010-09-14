@@ -1,7 +1,7 @@
 alias PREPEND 'setenv \!^ {$\!^}:{\!:2}'
 
 ####### DIFX VERSION ########################
-setenv DIFX_VERSION difx-2.0.0
+setenv DIFX_VERSION DiFX-2.0.0
 #setenv DIFX_VERSION trunk
 
 ####### ROOT PATHS ##########################
