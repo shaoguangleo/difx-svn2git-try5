@@ -791,7 +791,7 @@ void populateRuleTable(DifxInput *D, const CorrParams *P)
 				cerr << "Cannot handle rules for more than one source simultaneously" << endl;
 				exit(0);
 			}
-			strcpy(D->rule[i].sourcename, P->rules[i].sourceName.front().c_str());
+			strcpy(D->rule[i].sourceName, P->rules[i].sourceName.front().c_str());
 		}
 		if(P->rules[i].modeName.size() > 0)
 		{
