@@ -924,7 +924,7 @@ static DifxInput *parseDifxInputRuleTable(DifxInput *D,
 		r = DifxParametersfind1(ip, r+1, "RULE %d SOURCE", rule);
 		if(r>=0)
 		{
-			strcpy(D->rule[rule].sourcename, DifxParametersvalue(ip, r));
+			strcpy(D->rule[rule].sourceName, DifxParametersvalue(ip, r));
 		}
 		r = DifxParametersfind1(ip, r+1, "RULE %d SCAN ID", rule);
 		if(r>=0)
@@ -1719,6 +1719,12 @@ static DifxInput *populateCalc(DifxInput *D, DifxParameters *cp)
 		strncpy(D->job->taperFunction, DifxParametersvalue(cp, row), 7);
 		D->job->taperFunction[7] = 0;
 	}
+	row = DifxParametersfind(cp, 0, "VEX FILE");
+	if(row >= 0)
+	{
+		snprintf(D->job->vexFile, DIFXIO_FILENAME_LENGTH, "%s",
+			DifxParametersvalue(cp, row));
+	}
 	row = DifxParametersfind(cp, 0, "JOB START TIME");
 	if(row >= 0)
 	{
@@ -1982,7 +1988,7 @@ static DifxInput *populateCalc(DifxInput *D, DifxParameters *cp)
 				//printf("Checking if rule %d applies to scan %d, phase centre %d\n", r, i, src);
 				//printf("The phase centre src index is %d\n", D->scan[i].phsCentreSrcs[src]);
 				//printf("And its name is %s\n", D->source[D->scan[i].phsCentreSrcs[src]].name);
-				//printf("Rule sourcename is %s\n", D->rule[r].sourcename);
+				//printf("Rule sourceName is %s\n", D->rule[r].sourceName);
 				if(ruleAppliesToScanSource(&(D->rule[r]), &(D->scan[i]), &(D->source[D->scan[i].phsCentreSrcs[src]])) != 0)
 				{
 					applies = 1;

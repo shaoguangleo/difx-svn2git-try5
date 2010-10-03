@@ -211,7 +211,7 @@ typedef struct
 
 typedef struct
 {
-	char sourcename[32];	/* (DiFX) name of source, optional */
+	char sourceName[32];	/* (DiFX) name of source, optional */
 	char scanId[32];	/* Scan identifier from vex file, optional */
 	char calCode[4];	/* calCode, optional */
 	int qual;		/* Source qualifier, optional */
@@ -393,6 +393,7 @@ typedef struct
 	char calcServer[32];	/* name of calc server */
 	int calcVersion;	/* version number of calc server */
 	int calcProgram;	/* RPC program id of calc server */
+	char vexFile[DIFXIO_FILENAME_LENGTH];
 	char fileBase[DIFXIO_FILENAME_LENGTH];	/* base filename for this job table */
 	int activeDatastreams;
 	int activeBaselines;
