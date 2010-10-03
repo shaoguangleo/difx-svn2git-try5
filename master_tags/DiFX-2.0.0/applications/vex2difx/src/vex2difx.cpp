@@ -365,7 +365,7 @@ static void makeJobs(vector<VexJob>& J, VexData *V, const CorrParams *P, int ver
 	V->sortEvents();
 }
 
-static DifxJob *makeDifxJob(string directory, const VexJob& J, int nAntenna, const string& obsCode, int *n, int nDigit, char ext)
+static DifxJob *makeDifxJob(string directory, const VexJob& J, int nAntenna, const string& obsCode, int *n, int nDigit, char ext, const string &vexFile)
 {
 	DifxJob *job;
 	const char *difxVer;
@@ -381,6 +381,7 @@ static DifxJob *makeDifxJob(string directory, const VexJob& J, int nAntenna, con
 	{
 		strcpy(job->difxVersion, "Unknown");
 	}
+	snprintf(job->vexFile, DIFXIO_FILENAME_LENGTH, "%s", vexFile.c_str());
 	job->jobStart = J.mjdStart;
 	job->jobStop  = J.mjdStop;
 	job->mjdStart = J.mjdStart;
@@ -1371,7 +1372,7 @@ int writeJob(const VexJob& J, const VexData *V, const CorrParams *P, int overSam
 	D->nDataSegments = P->nDataSegments;
 
 	D->antenna = makeDifxAntennas(J, V, P, &(D->nAntenna), antList);
-	D->job = makeDifxJob(V->getDirectory(), J, D->nAntenna, V->getExper()->name, &(D->nJob), nDigit, ext);
+	D->job = makeDifxJob(V->getDirectory(), J, D->nAntenna, V->getExper()->name, &(D->nJob), nDigit, ext, P->vexFile);
 	
 	D->nScan = J.scans.size();
 	D->scan = newDifxScanArray(D->nScan);
@@ -1819,7 +1820,7 @@ int writeJob(const VexJob& J, const VexData *V, const CorrParams *P, int overSam
 		snprintf(D->outputFile,  DIFXIO_FILENAME_LENGTH, "%s.difx",    D->job->fileBase);
 		if(P->threadsFile != "")
 		{
-			snprintf(D->threadsFile, DIFXIO_FILENAME_LENGTH, P->threadsFile.c_str());
+			snprintf(D->threadsFile, DIFXIO_FILENAME_LENGTH, "%s", P->threadsFile.c_str());
 		}
 		else
 		{

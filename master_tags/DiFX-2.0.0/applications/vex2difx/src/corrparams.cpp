@@ -1115,7 +1115,6 @@ int CorrParams::setkv(const string &key, const string &value)
 {
 	stringstream ss;
 	int nWarn = 0;
-	char *ptr;
 
 	ss << value;
 	
