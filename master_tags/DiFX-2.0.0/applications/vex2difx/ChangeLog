@@ -33,6 +33,9 @@ Version 2.0
 * Support new namings in difxio.  recChan -> recBand
 * Fix year definition ( was correct in difx 1.5 for quite some time )
 * Better default some difx2.0 specific parameters
+* improve checking of subintNS and averaging intervals
+* prevent a crash when source RA and decs are changed
+* Write out vex file name in .calc file
 * Version for DiFX-2.0.0
 
 Version 0.3
