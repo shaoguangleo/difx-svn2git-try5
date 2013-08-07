@@ -9,6 +9,7 @@ c_sources = \
 	mark5_format_vlba_nomod.c \
 	mark5_format_mark4.c \
 	mark5_format_mark5b.c \
+	mark5_format_kvn.c \
 	format_vdif.c \
 	blanker_none.c \
 	blanker_mark5.c

@@ -62,7 +62,9 @@ enum Mark5Format
 	MK5_FORMAT_VDIF    =  3,
 	MK5_FORMAT_VDIFL   =  4,		/* Legacy headers on VDIF */
 	MK5_FORMAT_K5      =  5,		/* Not Yet Implemented */
-	MK5_FORMAT_VLBN    =  6
+	MK5_FORMAT_VLBN    =  6,
+	MK5_FORMAT_VDIFB   =  7,		/* Not to be propagated as an external format */
+	MK5_FORMAT_KVN5B   =  8			/* KVN Mixxxed up Mark5b format */
 };
 
 #define MAXBLANKZONES		32
@@ -274,6 +276,10 @@ int get_vdif_threads(const unsigned char *data, size_t length, int dataframesize
 /*   K5 format: not yet complete */
 
 struct mark5_format_generic *new_mark5_format_k5(int Mbps, int nchan, int nbit, int submode);
+
+/*   KVNMark5B format: under development */
+
+struct mark5_format_generic *new_mark5_format_kvn5b(int Mbps, int nchan, int nbit, int decimation);
 
 /*   Generate format from a string description */
 
