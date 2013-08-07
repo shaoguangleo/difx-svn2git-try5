@@ -1172,7 +1172,7 @@ int pystream::writeScans(const VexData *V)
 					*this << "print 'Not a recording scan but still set switches for " << scan->defName << ".'" << endl;
 					*this << "subarray.setSwitches(mjdStart + " << deltat1 << "*second, mjdStart+" << deltat2 << "*second, obsCode+'_'+stnCode+'_'+'" << scan->defName << "')" << endl;
 				}
-				else if(setup->formatName == "MARK5B")
+				else if(setup->formatName == "MARK5B"||setup->formatName == "KVN5B")
 				{
 					*this << "recorder0.setPacket(0, 0, 40, 5008)" << endl;
 					*this << "subarray.setRecord(mjdStart + " << deltat1 << "*second, mjdStart+" << deltat2 << "*second, '" << scan->defName << "', obsCode, stnCode )" << endl;
