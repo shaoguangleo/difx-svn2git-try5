@@ -25,10 +25,10 @@
 # setup versioned tools -- different per site
 # script that adds CASA 4.7.2 bin to PATH
 source ~/lib/casa.setup
-#source /swc/difx/setup-DiFX-2.5.3.bash
+source /swc/difx/setup-DiFX-2.5.3.bash
 #source /swc/difx/setup-DiFX-2.5.2.bash
 #source /swc/difx/setup-DiFX-2.5.bash
-source /swc/difx/setup-difx.bash
+#source /swc/difx/setup-difx.bash
 #source /swc/difx/difx-root-YYmonDD/setup-difx.bash
 #source /swc/hops/hops.bash
 # Only if you had somehow previously set it up:
@@ -204,14 +204,30 @@ for j in $jobs ;\
 do difx2mark4 -e $expn -s $exp.codes --override-version ${j/input/difx} ; done
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+
+>>>>>>> 918238954 (more nits)
 # identify roots:
 roots=`cd $expn ; ls */target*` ; echo $roots
 >>>>>>> 332681ab5 (Synchronized the recent script and drivepolconvert.py)
 cd $expn ; cp ../$ers.conf .
+<<<<<<< HEAD
 $ehtc/est_manual_phases.py -c $ers.conf -r ...
 grep ^if.station $ers.conf | sort | uniq -c
 $ehtc/est_manual_phases.py -c $ers.conf -r ...
+=======
+# For each root run this command, but set -s argument
+# with a comma-sep list of single letter station codes
+# that should be fit (relative to A as first station).
+# Refer to the station codes file for the 2-letter to 1-letter codes.
+$ehtc/est_manual_phases.py -c $ers.conf \
+    -r first-root -s A,...
+grep ^if.station $ers.conf | sort | uniq -c
+$ehtc/est_manual_phases.py -c $ers.conf \
+    -r second-root -s A,...
+>>>>>>> 918238954 (more nits)
 grep ^if.station $ers.conf | sort | uniq -c
 #...
 
