@@ -25,10 +25,10 @@
 # setup versioned tools -- different per site
 # script that adds CASA 4.7.2 bin to PATH
 source ~/lib/casa.setup
-#source /swc/difx/setup-DiFX-2.5.3.bash
+source /swc/difx/setup-DiFX-2.5.3.bash
 #source /swc/difx/setup-DiFX-2.5.2.bash
 #source /swc/difx/setup-DiFX-2.5.bash
-source /swc/difx/setup-difx.bash
+#source /swc/difx/setup-difx.bash
 #source /swc/difx/difx-root-YYmonDD/setup-difx.bash
 #source /swc/hops/hops.bash
 # Only if you had somehow previously set it up:
@@ -48,6 +48,11 @@ export arch=$hays
 export corr=/data-sc15/difxoper
 # run polconvert on the same machine with the files
 export work=/data-sc15/difxoper
+
+# If $work contains multiple jubs or unprocessed jobs, set this to true,
+# which implicitly sets the -u flag on any use of $ehtc/ehtc-joblist.py.
+# If $work is more messed up than that, you're on your own.
+export uniq=true    # or export uniq=false
 
 # principal vars for tracking all the revisions and forth
 export exp=e18...
@@ -81,7 +86,7 @@ export ers=$exp-$relv-$subv
 export ptar=$pcal???label???.APP_DELIVERABLES.tgz
 
 # check:
-wordcount=`( 
+wordcount=`(
 echo =============================================================== && \
 echo $exp $vers .$ctry. $subv $iter $relv .$flab. $expn && \
 echo $evs $ers $opts $fitsname $aeditjob && \
@@ -90,7 +95,7 @@ echo $ptar $pcal && \
 echo $pdir && \
 echo $release && \
 echo =============================================================== && \
-type casa && \ 
+type casa && \
 type mpifxcorr && \
 type fourfit && \
 echo =============================================================== 
@@ -185,17 +190,12 @@ cp -p $exp-$subv-v${vers}${ctry}p${iter}r${relv}.logfile $release/logs
 # run the GENERAL PROCESSING commands on one or three jobs to make
 # suitable data for generating "good enough" manual phase cals
 #
-<<<<<<< HEAD
-### Notes on building $ers.conv
-# scans to use grep from *jobs*
-=======
 ### Notes on building $ers.conf
 # pick scans to use grep from *jobs*
 # stations: ...
 awk '{print $5}' $ers-jobs-map.txt | tr '-' \\012 | sort | uniq -c
 # types of baselines: ...
 awk '{print $5}' $ers-jobs-map.txt | sort | uniq -c
->>>>>>> 332681ab5 (Synchronized the recent script and drivepolconvert.py)
 
 jobs=`echo $exp-$vers-${subv}_{,}.input` ; echo $jobs
 prepolconvert.py -v -k -s $dout $jobs
@@ -203,27 +203,28 @@ drivepolconvert.py -v $opts -l $pcal $jobs
 for j in $jobs ;\
 do difx2mark4 -e $expn -s $exp.codes --override-version ${j/input/difx} ; done
 
-<<<<<<< HEAD
-=======
+
 # identify roots:
 roots=`cd $expn ; ls */target*` ; echo $roots
->>>>>>> 332681ab5 (Synchronized the recent script and drivepolconvert.py)
 cd $expn ; cp ../$ers.conf .
-$ehtc/est_manual_phases.py -c $ers.conf -r ...
+# for each root run this command, but set -s argument
+# with a comma-sep list of single letter station codes
+# that should be fit (relative to A as first station).
+$ehtc/est_manual_phases.py -c $ers.conf \
+    -r first-root -s AA,...
 grep ^if.station $ers.conf | sort | uniq -c
-$ehtc/est_manual_phases.py -c $ers.conf -r ...
+$ehtc/est_manual_phases.py -c $ers.conf \
+    -r second-root -s AA,...
 grep ^if.station $ers.conf | sort | uniq -c
 #...
 
-# be sure to clean up afterwards
+# be sure to clean up afterwards, especially to move $expn aside
 cd ..
 cp -p $expn/$ers.conf .
 cp -p $expn/$ers.conf $release/logs
-rm -rf $expn ${jobs//input/*}
+mv $expn ff-conf-$expn
+rm -rf ${jobs//input/*}
 ### now have $ers.conf
-
-# generate TODO list with:
-$ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs -G
 } # ONE TIME SETUP
 
 # GENERAL PROCESSING TEMPLATE ======================
@@ -253,17 +254,12 @@ $ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs -G
 # or on the processing host with:
 # sh this.logfile & disown
 #--------------------------------------------------------------------------
-<<<<<<< HEAD
-# While processing ======================
-=======
 #
 # Final Steps ======================
 # This section is always MANUL.
 #
 false && {
->>>>>>> 332681ab5 (Synchronized the recent script and drivepolconvert.py)
 # save logfile incrementally or when done:
-false && {
 cp -p $exp-$subv-v${vers}${ctry}p${iter}r${relv}.logfile $release/logs
 ls -l $release/logs
 
@@ -322,11 +318,17 @@ for r in tb-* ; do pushd $r ; nohup ./release.sh & popd ; done
 # and finally after everything is released count the products
 $ehtc/ehtc-release-check.sh
 
+# one last time
+cp -p $exp-$subv-v${vers}${ctry}p${iter}r${relv}.logfile $release/logs
+ls -l $release/logs
+
 # Cleanup list ======================
 # after tarballs are delivered and if you want to recover disk space
 rm -rf $exp-$vers-${subv}_*.save
 rm -rf $exp-$relv-${subv}_*.save
 }
+# avoid worrisome error return values
+true
 
 #
 # eof
