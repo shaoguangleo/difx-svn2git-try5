@@ -642,7 +642,11 @@ def doGroups(o, doLabels):
         print 'false && { # start with a short job'
         for a in sorted(list(ans)):
             exprt=('  export proj=%s targ=%s class=%s' % tuple(a.split(':')))
+<<<<<<< HEAD
             print  '%-56s ; label=$proj-$targ' % exprt
+=======
+            print  '%-54s    label=%s-%s' % (exprt,proj,targ)
+>>>>>>> e3099c5bf (synchronizing branches)
             print  '  nohup $ehtc/ehtc-jsgrind.sh < /dev/null > $label.log 2>&1'
         print '}'
     else:
