@@ -300,6 +300,7 @@ def deduceZoomIndicies(o):
         zfinal.add(zfin)
         mfqlst.add(cfrq[len(cfrq)/2])
     if len(zfirst) != 1 or len(zfinal) != 1:
+<<<<<<< HEAD
         raise Exception, ('Encountered ambiguities in zoom freq ranges: ' +
             'first is ' + str(zfirst) + ' and final is ' + str(zfinal))
     o.zfirst = int(zfirst.pop())
@@ -326,6 +327,43 @@ def deduceZoomIndicies(o):
         if o.verb:
             print ('Supplied band (%s) agrees with median freq. (%f, %s)' %
                 (o.band, medianfreq, medianband))
+=======
+        if o.zmchk:
+            raise Exception, ('Encountered ambiguities in zoom freq ranges: ' +
+                'first is ' + str(zfirst) + ' and final is ' + str(zfinal))
+        elif o.verb:
+            print 'global zoom first',str(zfirst),'and final',str(zfinal)
+    if len(zfirst) > 0 and len(zfinal) > 0:
+        o.zfirst = int(sorted(list(zfirst))[0])  # int(zfirst.pop())
+        o.zfinal = int(sorted(list(zfinal))[-1]) # int(zfinal.pop())
+    else:
+        o.zfirst = -1
+        o.zfinal = -2
+    if (len(o.nargs) > 0) and o.verb:
+        print 'Zoom freq. indices %d..%d found in \n  %s..%s' % (
+            o.zfirst, o.zfinal, o.nargs[0], o.nargs[-1])
+    elif o.verb:
+        print 'Not going to be doing any real work after this: No jobs'
+    # Report on remote peer for polconvert plot diagnostics
+    if (len(o.remotelist) != len(o.nargs)): o.remotelist = []
+    if o.verb:
+        for j,r,s,m in map(lambda x,y,z,w:(x,y,z,w),
+            o.nargs, o.remotelist, o.remotename, o.remote_map):
+            print "%s<->%s(%s%s)," % (j,r,s,m),
+        print '\nRemote list len is',len(o.remotelist),'index is',o.remote
+        print 'Remote list is',o.remotelist,'(indices start at 1)'
+        print 'Jobs now',o.djobs
+    # If the user supplied a band, check that it agrees
+    print 'mfqlst is', mfqlst
+    if len(mfqlst) == 1:
+        medianfreq = float(mfqlst.pop())
+    elif len(mfqlst) > 1:
+        print ('Input files have disparate frequency structures:\n' +
+            '  Median frequencies: ' + str(mfqlst) + '\n')
+        mfqlist = list(mfqlst)
+        medianfreq = float(mfqlist[len(mfqlist)/2])
+        print 'Using the median of medians: ', medianfreq
+>>>>>>> 221a38c8d (Added another diagnostic for when things go south.)
     else:
         raise Exception, ('User-supplied band (%s) disagrees with '
             'input frequencies (%f, %s)' % (o.band, medianfreq, medianband))
