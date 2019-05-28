@@ -292,6 +292,37 @@ def deduceZoomIndicies(o):
                 if zfir == '': zfir = zoom.group(1)
                 else:          zfin = zoom.group(1)
         ji.close()
+<<<<<<< HEAD
+=======
+        zfir = str(zfirch)
+        zfin = str(zfinch)
+
+        # cull jobs that do not appear to have AA as telescope 0
+        if almaline == '':
+            issue = True
+            for jn in o.jobnums:
+                if '_' + str(jn) + '.input' in jobin:
+                    print 'ALMA not in',jobin,', skipping (',jn,')'
+                    o.jobnums.remove(jn)
+                    issue = False
+                    break
+            if issue: raise Exception, 'Unable to purge job ' + jobin
+            else:     continue
+        else:
+            print 'Found ALMA in',jobin,almaline.rstrip()
+            newargs.append(jobin)
+            # workout plot ant for this job
+            plotant = -1
+            for site in sitelist:
+                if site in antmap:
+                    plotant = antmap[site] + 1
+                    o.remotename.append(site)
+                    o.remote_map.append(str(sorted(antmap.keys())))
+                    break
+            o.remotelist.append(plotant)
+            antmap = {}
+
+>>>>>>> 3ab080213 (clarified a debugging message)
         if o.verb: print 'Zoom bands %s..%s from %s' % (zfir, zfin, jobin)
         if len(cfrq) < 1:
             raise Exception, 'Very odd, no frequencies in input file ' + jobin
@@ -349,8 +380,9 @@ def deduceZoomIndicies(o):
     if o.verb:
         for j,r,s,m in map(lambda x,y,z,w:(x,y,z,w),
             o.nargs, o.remotelist, o.remotename, o.remote_map):
-            print "%s<->%s(%s%s)," % (j,r,s,m),
-        print '\nRemote list len is',len(o.remotelist),'index is',o.remote
+            print "%s<->%s(%s) %s" % (j,s,r,m)
+        print 'Remote list len is',len(o.remotelist),'index is',o.remote
+        if o.remote == -1: print '(index of -1 means "not used")'
         print 'Remote list is',o.remotelist,'(indices start at 1)'
         print 'Jobs now',o.djobs
     # If the user supplied a band, check that it agrees
