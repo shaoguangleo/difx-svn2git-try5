@@ -397,11 +397,26 @@ def deduceZoomIndicies(o):
         print 'Using the median of medians: ', medianfreq
 >>>>>>> 221a38c8d (Added another diagnostic for when things go south.)
     else:
+<<<<<<< HEAD
         raise Exception, ('User-supplied band (%s) disagrees with '
             'input frequencies (%f, %s)' % (o.band, medianfreq, medianband))
     # this should not be needed with the above
     if not (o.band == '3' or o.band == '6Lo' or o.band == '6Hi'):
         raise Exception, 'Observing band mis-specified, use -b 3|6Lo|6Hi'
+=======
+        print 'No median frequency, so no idea about medianband'
+        print 'Leaving it up to PolConvert to sort out'
+        return
+    # finally the diagnostic message
+    if   medianfreq <  90000.0: medianband = '3 (GMVA)'
+    elif medianfreq < 214100.0: medianband = 'b1 (Cycle5 6[LSB]Lo)'
+    elif medianfreq < 216100.0: medianband = 'b2 (Cycle5 6[LSB]Hi)'
+    elif medianfreq < 228100.0: medianband = 'b3 (Cycle4 6[USB]Lo)'
+    elif medianfreq < 230100.0: medianband = 'b4 (Cycle4 6[USB]Hi)'
+    else:                       medianband = '??? band 7 ???'
+    print 'Working with band %s based on median freq (%f)' % (
+            medianband, medianfreq)
+>>>>>>> 68bebe3af (duping deduce fix to other branches)
 
 def plotPrep(o):
     '''
