@@ -9,6 +9,7 @@ verb=${1-'false'}
 [ -n "$evs" ] || { echo evs not defined in the environment; exit 1; }
 [ -n "$ers" ] || { echo ers not defined in the environment; exit 1; }
 [ -n "$expn" ] || { echo expn not defined in the environment; exit 1; }
+<<<<<<< HEAD
 [ -n "$pcal" ] || { echo pcal not defined in the environment; exit 1; }
 [ `find  -maxdepth 1 -name '*.obs' | wc -l` == 1 ] || { echo found too many '*.obs' files; exit 1; }
 [ -f *.obs ] || { echo missing experiment.obs file; exit 1; }
@@ -16,6 +17,26 @@ verb=${1-'false'}
 logcount=`ls -1 $release/logs | grep -v packaging | wc -l`
 $verb && echo $logcount files in $release/logs
 [ "$logcount" -eq 13 ] || { echo Error: $logcount files in $release/logs but expected 13; exit 2; }
+=======
+[ -n "$plst" ] || { echo plst not defined in the environment; exit 1; }
+[ `find  -maxdepth 1 -name '*.obs' | wc -l` == 1 ] || {
+    echo found too many '*.obs' files; exit 1; }
+[ -f *.obs ] || { echo missing experiment.obs file; exit 1; }
+
+nantabs=0 ; for pc in $plst ; do nantabs=$(($nantabs + 1)) ; done
+
+logcount=`ls -1 $release/logs/${ers}* | grep -v packaging | wc -l`
+$verb && echo $logcount files in $release/logs
+expected=$((14 + $nantabs))
+[ "$logcount" -eq $expected ] || {
+    # files: (1+) $ers-*-antab.pdf, (2-5) $ers-amp|drate|sbd|snd-time.pdf
+    #        (6-9) $ers-*-map.txt,  (10) $ers.conf
+    #        (11) $ers-manifest.txt (12) $ers-performance.txt
+    #        (13-14) $ers-difxlog-*.txt (15) $ers-fits-missing.txt
+    echo Error: wrong number $logcount files in $release/logs,
+    echo '     ' expected $expected based on $nantabs antab files;
+    $exit 2 ; }
+>>>>>>> 551aef1a1 (Synchronizing additional fiddly scripting in eht processing.)
 
 set -- `$ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs -G`
 while [ $# -ge 4 ]
@@ -27,6 +48,7 @@ do
     #
     pkg=$release/logs/$proj-$class-packaging
     $verb && ls -ld $pkg
+<<<<<<< HEAD
     [ -d $pkg ] || { echo $pkg is missing ; exit 3 ; }
     job=$pkg/$proj-$targ.log
     $verb && ls -l $job
@@ -34,6 +56,15 @@ do
     rel=$pkg/$proj-$targ-$class-release.log
     $verb && ls -l $rel
     [ -f $rel ] || { echo $rel is missing ; exit 5 ; }
+=======
+    [ -d $pkg ] || { echo $pkg dir is missing ; $exit 3 ; }
+    job=$pkg/$proj-$targ-$subv.log
+    $verb && ls -l $job
+    [ -f $job ] || { echo $job log is missing ; $exit 4 ; }
+    rel=$pkg/$proj-$targ-$class-$subv-release.log
+    $verb && ls -l $rel
+    [ -f $rel ] || { echo $rel log is missing ; $exit 5 ; }
+>>>>>>> 551aef1a1 (Synchronizing additional fiddly scripting in eht processing.)
     [ "$proj" = 'na' ] && clogs=6 || clogs=8
     lc=`ls -1 $pkg/$ers-$proj-$targ*.tar.log | wc -l`
     $verb && echo $pkg has $lc files, need $clobs for $class
@@ -64,7 +95,7 @@ for map in ant-ch-bl ant-ch bl-pol jobs ; do ls="$ls $ers-$map-map.txt" ; done
 ls="$ls $ers-difxlog-clr.txt"
 ls="$ls $ers-difxlog-sum.txt"
 ls="$ls $ers-manifest.txt"
-ls="$ls $ers-$pcal-antab.pdf"
+for pc in $plst ; do ls="$ls $ers-$pc-antab.pdf" ; done
 for art in $ls
 do
     rlart=$release/logs/$art

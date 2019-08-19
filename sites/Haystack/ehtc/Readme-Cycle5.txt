@@ -1,5 +1,5 @@
 #
-# Instructions for polconversion/packaging for <Observation><Band>
+# Instructions for polconversion/packaging for <Observation>/<Band>
 #
 # This version is appropriate to Cycle5 (b1..b4)
 # The template for this file is in:     $ehtc/Readme-Cycle5.txt
@@ -11,6 +11,14 @@
 #  p${iter}         refers to the polconvert iteration
 #  r${relv}         refers to the release name
 #
+<<<<<<< HEAD
+=======
+# If there are MULTIPLE PROJECTS with SEPARATE QA2 DELIVERABLES for
+# each, you will need to manage two sets of QA2 calibrations using
+# QA2_proj logic variables.  I.e. you will have 2 or more passes of
+# setup and grinding using this file.  Final release is still by track.
+#
+>>>>>>> 551aef1a1 (Synchronizing additional fiddly scripting in eht processing.)
 # Cut and paste from this file (which is necessary to get started).
 # Once the fourfit control file is in hand, you can execute parts of
 # the file using true && { ... } or false && { ... } for partial runs.
@@ -59,6 +67,7 @@ export relv=?       # archive release name number
 export flab=''      # re-fourfitting version (if needed)
 export expn=3...    # HOPS exp # (from Mike Titus)
 
+<<<<<<< HEAD
 # polconvert variables and other option variables
 # $pdir depend on QA2 development
 # $dpfu is estimated from QA2 products using this:
@@ -70,6 +79,34 @@ export pdir=$hays/$exp/$exp-$vers/qa2
 export dpfu=0.0308574                          # ave over session, val TBD
 export scmp='PV,MG,SW,AX,LM,SZ'                # cycle5
 export opts="-r -P15 -S $scmp -f 4 -A $dpfu -q v8"
+=======
+# $dpfu is estimated from QA2 products, see one-time setup
+export dpfu=0.0308574
+# a list of stations in best order for polconvert plots
+export scmp='PV,MG,SW,AX,LM,SZ,GL,MM'
+# number of parallel grinds to schedule (< number physical cores)
+export npar=15
+# number of polconvert fringe plots to make
+export npcf=4
+
+# define one logic variable QA2_proj for each project nickname <proj>
+# in the track and set plab, pcal and qpar appropriately for it.  You
+# will need to repeat part of the one-time setup for each QA2 setup.
+# make sure that precisely one QA2_proj variable can be true
+export QA2_proj=false # true
+export QA2_na=false
+$QA2_proj && {
+    $QA2_na && echo QA2 logic error && exit
+    export plab=<track>-<exp>-<yyyymmdd>           # external QA2 file label
+    export pcal=???????                            # internal QA2 label
+    export qpar=v?
+}
+$QA2_na && echo QA2 logic error && exit
+export opts="-r -P $npar -S $scmp -f $npcf -A $dpfu -q $qpar"
+export plst="list of all pcal labels"
+
+# see the tarball script for what this does, should be false
+>>>>>>> 551aef1a1 (Synchronizing additional fiddly scripting in eht processing.)
 export fitsname=false
 export aeditjob=$ehtc/ehtc-aeditjob.sh
 
@@ -83,11 +120,17 @@ export ptar=$pcal???label???.APP_DELIVERABLES.tgz
 # check:
 wordcount=`( 
 echo =============================================================== && \
+<<<<<<< HEAD
 echo $exp $vers .$ctry. $subv $iter $relv .$flab. $expn && \
 echo $evs $ers $opts $fitsname $aeditjob && \
+=======
+echo $exp $vers .$ctry. $subv .$stry. $iter $relv .$flab. $expn && \
+echo $evs $ers $opts && \
+echo $fitsname $aeditjob && \
+>>>>>>> 551aef1a1 (Synchronizing additional fiddly scripting in eht processing.)
 echo $dout && \
-echo $ptar $pcal && \
-echo $pdir && \
+echo $ptar $pcal $qpar && \
+echo $pdir $npar $scmp $npcf $dpfu && \
 echo $release && \
 echo =============================================================== && \
 type casa && \ 
@@ -95,7 +138,14 @@ type mpifxcorr && \
 type fourfit && \
 echo =============================================================== 
 ) | wc -w`
+<<<<<<< HEAD
 [ "$wordcount" -eq 39 ] && echo variables are ok || echo issue with variables
+=======
+[ "$wordcount" -eq 46 ] && echo variables are ok || {
+    [ "$wordcount" -eq 43 ] && echo variables ok, but QA2 all false ||
+    { echo issue with variables ; exit ; }
+}
+>>>>>>> 551aef1a1 (Synchronizing additional fiddly scripting in eht processing.)
 
 # Nth TIME SETUP =================
 cd $work/$exp/v${vers}${ctry}p${iter}/$subv
@@ -122,7 +172,11 @@ cd $work/$exp/v${vers}${ctry}p${iter}/$subv
 [ -d $pdir ] || { mkdir -p $pdir && echo need DELIVERABLES tarball in $pdir ; }
 [ -d ../qa2 ] || { mkdir ../qa2 ; pushd ../qa2 ; tar zxf $pdir/$ptar ; popd ; }
 
+<<<<<<< HEAD
 # link in the QA2 package tables for this band
+=======
+# for every QA2_proj, link in the QA2 package tables
+>>>>>>> 551aef1a1 (Synchronizing additional fiddly scripting in eht processing.)
 for d in ../qa2/$pcal.* ; do ln -s $d . ; done
 for f in ../qa2/README.* ; do ln -s $f . ; done
 ls -ld $pcal.*
@@ -258,6 +312,7 @@ $ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs -G
 #--------------------------------------------------------------------------
 # TODO list ======================
 # $ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs -L
+# be sure to adjust grind jobs to respect QA2_proj logic
 
 ###
 ### log of $ers commands goes here
@@ -306,6 +361,8 @@ antabfiles=`ls -l $ers*polcon*/*ANTAB | wc -l`
     echo $polconversions -ne $allifsplots '(polconversions ne allifplots)' ; }
 [ $polconversions -eq $antabfiles ] || { echo -n '### missing antabfiles ';
     echo $polconversions -ne $antabfiles '(polconversions ne $antabfiles)' ; }
+for j in `cat $ers-jobs-map.txt | grep -v do.not | awk '{print $1}'`
+    do ls *$j*/*ANTAB *$j*/*TS/ALL*png > /dev/null ; done
 
 # Examine some of the 4fit fringes on questionable cases with
 fplot $ers-*-4fit.$expn.save/$doyhhmm/A[^A].B.*
@@ -314,9 +371,11 @@ fplot $ers-*-4fit.$expn.save/$doyhhmm/A[^A].B.*
 compare-baselines-v6.pl -n 10000 -f -x AL \
     -a ...4fit.$expn.save/*.alist -b ...4fit.$expn.save/*.alist
 
-# verify that fits files are not missing data or report on it:
-cat *fits*/*pclist
-cat *fits*/*pclist | egrep '   AA|x ' | uniq | sed 's/^/### /'
+# verify that fits files are missing what is sensible
+# (delete lines  that are only x because of missing stations)
+cat *fits*/*pclist | egrep ' AA |x ' | sort | uniq |\ 
+    grep -v '#' > $ers-fits-missing.txt ; cat $ers-fits-missing.txt
+cp -p $ers-fits-missing.txt $release/logs
 
 # Final steps ======================
 # generate some summary aedit pdfs
@@ -324,20 +383,33 @@ $ehtc/ehtc-aeditjob.sh all
 cp -p $ers-$expn-*-time.pdf $release/logs
 
 # verify that the per-scan antabs are in agreement with the QA2 estimates:
-$ehtc/ehtc-antab.sh $subv $pcal $ers true
-cp -p $ers-$pcal-antab.pdf $release/logs
+for pc in $plst
+do  $ehtc/ehtc-antab.sh $subv $pc $ers true
+    cp -p $ers-$pc-antab.pdf $release/logs ; done
 
 # check on progress/missing scans (incrementally or when done):
 $ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs -c $exp.codes -K |\
-  sort -k 1n > $release/logs/$ers-manifest.txt
+  sort -k 1n > $ers-manifest.txt
+cp -p $ers-manifest.txt $release/logs
+awk '$4 == $6 {next;}{print;}' $ers-manifest.txt | sed 's/^/### /'
 
 # when ready to release, execute these shells
-ls tb-*/release.sh
-for r in tb-* ; do pushd $r ; nohup ./release.sh & popd ; done
+for r in tb-* ; do pushd $r ; ls -l ./release.sh & disown ; popd ; done
+for r in tb-* ; do pushd $r ; nohup ./release.sh & disown ; popd ; done
 
 # and finally after everything is released count the products
-$ehtc/ehtc-release-check.sh
+$ehtc/ehtc-release-check.sh | sed 's/^/### /'
 
+<<<<<<< HEAD
+=======
+# one last time
+logfile=$exp-$subv-v${vers}${ctry}${stry}p${iter}r${relv}.logfile
+comment=$exp-$subv-v${vers}${ctry}${stry}p${iter}r${relv}.comment
+grep '^###' $logfile > $comment
+cp -p $logfile $comment $release/logs
+ls -l $release/logs
+
+>>>>>>> 551aef1a1 (Synchronizing additional fiddly scripting in eht processing.)
 # Cleanup list ======================
 # after tarballs are delivered and if you want to recover disk space
 rm -rf $exp-$vers-${subv}_*.save
