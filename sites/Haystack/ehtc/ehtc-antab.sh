@@ -25,6 +25,7 @@ you need make some adjustments for understanding the plot or producing
 different versions (default values are given):
     decimation=$decimation      use one value in this many
     plotrange=$plotrange        Hours and Tsys for gnuplot
+The plotrange defaults to [][0:10] allowing for nominal Tsys performance.
 "
 # parse arguments
 band=${1-'noband'}
