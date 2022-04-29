@@ -33,7 +33,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 typedef struct {
  int fileNumber;
- int Source;
  double Time;
  char Pol[2];
  bool notUsed;
@@ -54,7 +53,7 @@ class DataIOSWIN: public DataIO {
 
    ~DataIOSWIN();
 
-   DataIOSWIN(int nSWIN, std::string* outputfiles, int Nant, int *Ants, double *doRange, int nIF, int *nChan, double **Freqs, bool Overwrite, bool doTest, bool doSolve, double jd0, ArrayGeometry *Geom, FILE *logF);
+   DataIOSWIN(int nSWIN, std::string* outputfiles, int Nant, int *Ants, double *doRange, int nIF, int *nChan, double **Freqs, bool Overwrite, bool doTest, double jd0, FILE *logF);
 
    bool setCurrentIF(int i);
 
@@ -76,7 +75,7 @@ class DataIOSWIN: public DataIO {
 
  // Modify the visibilities read by "getNextMixedVis" by the calibration matrix supplied
  // Saves the result in the "bufferVis" pointer  
-  void applyMatrix(std::complex<float> *M[2][2], bool swap, bool print, int thiAnt, FILE *plotFile);
+  void applyMatrix(std::complex<float> *M[2][2], bool swap, bool print, FILE *plotFile);
 
 
 
@@ -103,7 +102,7 @@ class DataIOSWIN: public DataIO {
     int nfiles;
     std::ifstream *olddifx;
     std::ofstream *newdifx;
-    bool isOverWrite, doWriteCirc;
+    bool isOverWrite;
     long currEntries[MAXIF][4], nrec;
     long *filesizes;
     std::complex<float> *currentVis[4] ;

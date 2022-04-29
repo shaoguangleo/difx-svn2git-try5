@@ -19,7 +19,6 @@ import datetime
 import shutil
 import subprocess
 import getpass
-import glob
 from difxdb.business.versionhistoryaction import *
 from optparse import OptionParser
 from difxdb.difxdbconfig import DifxDbConfig
@@ -230,19 +229,6 @@ def syncReferenceDir(path, referencePath, fileCount, dryRun):
     print('\nFinished')
     return
 
-def searchHops(path):
-    isHops = False
-
-    reHops = re.compile("^\d{4}$")
-    print "Searching for HOPS subdirectories"
-    for subdir, dirs, files in os.walk(path):
-    	for dir in dirs:
-        	# check for fourfit subdirectories (4-digit numeric)
-        	if reHops.match(dir):
-          		print "Found: " + subdir + "/" + dir
-			isHops = True
-    return(isHops)
-
 def confirmAction():
     
      # if --force option was used skip confirmation
@@ -327,13 +313,10 @@ if __name__ == "__main__":
     remotePath = config.get("difxarchive", "archiveremotepath")
     
     destination = user + "@" + server + ":" + remotePath
+    
 
     try:
         if not options.dbOnly:
-	    # search for fourfit/HOPS subdirectories (e.g. 1234)
-	    if searchHops(path):
-		sys.exit("Aborted: The directory tree contains HOPS subdirectories which need to be packed prior to archival. Use the packHops utility before running difxarchive.")
-	
             # obtain kerberos ticket
             getTicket(user)
 

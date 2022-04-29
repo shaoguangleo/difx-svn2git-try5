@@ -51,49 +51,6 @@ try:
 except Exception, ex:
     raise ex
 
-# option to delete specific gain tables from the list
-try:
-    gdblst = ['bandpass', 'ampgains', 'phsgains', 'xyrelphs', 'gxyampli']
-    if type(gainDel) == str:
-        for g in gainDel.split(','):
-            print 'Deleting ' + gdblst[int(g)]
-            del calgains[3+int(g)]
-        print 'Revised calgains list is:'
-        for c in calgains: print '    ', c
-    else:
-        gainDel = ''
-        print 'Overriding gainDel -- turning it off'
-except Exception, ex:
-    print type(gainDel)
-    print 'gainDel not str?', str(ex)
-    gainDel = ''
-    print 'gain deletion turned off'
-
-# option to turn off the amplitude calibration logic
-try:
-    if type(ampNorm) == bool:
-        if ampNorm: print 'Amplitude Normalization is done'
-        else:       print 'Amplitude Normalization is off'
-    else:
-        print 'Overriding ampNorm -- turning it on'
-        ampNorm = True
-except Exception, ex:
-    print 'ampNorm not bool?', str(ex)
-    ampNorm = True
-    print 'Amplitude Normalization is on'
-
-# option for fringe plot pixels
-try:
-    if type(numFrPltPix) == int:
-        print 'Fringe plots with %d pixels at center' % numFrPltPix
-    else:
-        print 'Overriding numFrPltPix to 50'
-        numFrPltPix = 50
-except Exception, ex:
-    print 'numFrPltPix not int?', str(ex)
-    numFrPltPix = 50
-    print 'Setting numFrPltPix to 50'
-
 # require constXYadd to be set to allow disabling table
 try:
     if type(constXYadd) == bool:
@@ -136,8 +93,7 @@ except Exception, ex:
 def runPolConvert(label, band3=False, band6Lo=False, band6Hi=False,
     DiFXinput='', DiFXoutput='', DiFXsave='',
     timeRange=[], doTest=True, savename='', plotIF=-1, doIF=[], 
-    amp_norm=True, XYadd=[0.0], XYratio=[1.0], linAnt=[1], plotAnt=-1,
-    npix=50):
+    XYadd=[0.0], XYratio=[1.0], linAnt=[1], plotAnt=-1):
     # based on common drivepolconvert inputs above
     gains = calgains[3:]
     interpolation = ['linear', 'nearest', 'linear', 'linear']
@@ -185,27 +141,15 @@ def runPolConvert(label, band3=False, band6Lo=False, band6Hi=False,
     os.rename(DiFXoutput, DiFXsave)
 
     # actually run PolConvert setting everything.
-    # commented arguments are not needed for DiFX, but are
-    # mentioned here as comments for clarity.  CASA supplies
-    # defaults from the task xml file.
     try:
-        print 'Calling PolConvert from runpolconvert'
         polconvert(IDI=DiFXsave, OUTPUTIDI=DiFXoutput, DiFXinput=DiFXinput,
-            #DiFXcalc,
             linAntIdx=[1], Range=Range, ALMAant=aantpath,
             spw=spw, calAPP=calapphs, calAPPTime=calAPPTime,
-            #APPrefant,
             gains=[gains], interpolation=[interpolation],
-            dterms=[dterm], amp_norm=amp_norm,
-            XYadd=XYadd,
-            #XYdel,
-            XYratio=XYratio, swapXY=[False], IDI_conjugated=True,
+            dterms=[dterm], amp_norm=True,
+            XYadd=XYadd, XYratio=XYratio, swapXY=[False], IDI_conjugated=True,
             plotIF=plotIF, doIF=doIF, plotRange=timeRange,
-            plotAnt=plotAnt,
-            #excludedAnts, doSolve, solint
-            doTest=doTest, npix=npix,
-            solveAmp=False
-            )
+            plotAnt=plotAnt, doTest=doTest)
     except Exception, ex:
         print 'Polconvert Exception'
         if (os.path.exists(DiFXoutput)):
@@ -235,13 +179,11 @@ for job in djobs:
     SWIN = ('%s/%s_%s.difx' % (DiFXout,expName,job))
     SAVE = ('%s/%s_%s.save' % (DiFXout,expName,job))
 
-    print '\nProceeding with job ' + job + '\n'
     runPolConvert(label, band3=band3, band6Lo=band6Lo, band6Hi=band6Hi,
         DiFXinput=DiFXinput, DiFXoutput=SWIN, DiFXsave=SAVE,
-        amp_norm=ampNorm, XYadd=XYadd, XYratio=XYratio,
+        XYadd=XYadd, XYratio=XYratio,
         timeRange=timeRange, doTest=doTest, savename=expName + '_' + job,
-        plotIF=plotIF, doIF=doIF, linAnt=linAnt, plotAnt=plotAnt,
-        npix=numFrPltPix)
+        plotIF=plotIF, doIF=doIF, linAnt=linAnt, plotAnt=plotAnt)
 
 #
 # eof

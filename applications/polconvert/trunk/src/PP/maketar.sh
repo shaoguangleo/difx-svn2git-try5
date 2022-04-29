@@ -15,20 +15,13 @@ cfiles='
     DataIOSWIN.h
     INSTALL
     _PolConvert.cpp
-    _PolGainSolve.cpp
     polconvert.xml
     Weighter.h
     Weighter.cpp
     '
 
 scripts='
-    QA2/APP_QA2script_template_C4.py
-    QA2/PolConvert_EVN_1.4.py
-    QA2/README.POLCONVERT
-    QA2/scriptForCalibrationAPP_C4_withTsys.py
     QA2/scriptForCalibrationAPP.py
-    QA2/scriptForCalibrationAPP_v-8Jul17.py
-    QA2/scriptForImagingAPP_C4.py
     QA2/scriptForImagingAPP.py
     PP/drivepolconvert.py
     PP/prepolconvert.py
@@ -41,7 +34,6 @@ scripts='
 
 built='
     _PolConvert.so
-    _PolGainSolve.so
     polconvert.py
     polconvert_cli.py
     '
