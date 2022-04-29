@@ -1,23 +1,3 @@
-
-
-v1.5 - v1.7
-
-- antab for ALMA is now correct; missing cross-pol autocors for ALMA now fixed
-- general expansion of capabilities in response to EHT issues and
-- support for non-ALMA linear pol sites (EVN, &c.)
-
-v1.4
-
-- Bandpass mode for the cross-polarization gains.
-- Parallactic-angle computation (to enable the use of RR and LL in the X-Y gain estimate).
-- Global Cross-Polarization Fringe Fitting, to find X-Y gains.
-- New C++ module to solve for gains.
-
-v1.3
-
-- Returns cross-polarization gains in a list (to apply them to XYadd and XYratio).
-- Estimate (and application) of multi-band delay
-
 v1.2-r7
 
 - Gain files in ANTAB format.
@@ -53,4 +33,3 @@ v1.2-r13
 TODO: 
 
 - Fitting of XY-phase with a simple delay model (per subband).
-- BETTER LEAST-SQUARES MINIMIZER FOR THE CROSS-POLARIZATION GAIN ESTIMATES.

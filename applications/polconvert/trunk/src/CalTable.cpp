@@ -46,13 +46,11 @@ CalTable::CalTable(int kind, double **R1,double **P1,double **R2,double **P2, do
       logFile = logF ;
 
       isLinear = islinear;      
-//      isTsys = istsys;
 
       firstTime = new bool[Nants];
 
       isDelay = kind==1;
       isDterm = kind==2;
-      isTsys = kind==3;
       gainChanged = true;
 
       Ntimes = new long[Nants];
@@ -434,9 +432,8 @@ bool CalTable::setInterpolationTime(double itime) {
   if (itime == currTime) {gainChanged = false; return gainChanged;};
 
   long i; //, auxI;
-  long ti0 = 0;
-  long ti1 = 0; 
-  double Kt = 0.0;
+  long ti0, ti1; 
+  double Kt;
   long Nts; 
   double auxD, auxD2;
   int iant;
@@ -579,11 +576,6 @@ void CalTable::applyInterpolation(int iant, int mode, std::complex<float> *gain[
          auxD = TWOPI*(((double)i + 0.5)*deltaNu+deltaNu0);
          bufferGain[0][iant][i] = (std::complex<float>) std::polar(1.0,auxF0*auxD);
          bufferGain[1][iant][i] = (std::complex<float>) std::polar(1.0,auxF1*auxD);
-       } else if (isTsys) {
-         bufferGain[0][iant][i].real(1./sqrt(auxF0));
-         bufferGain[0][iant][i].imag(0.0);
-         bufferGain[1][iant][i].real(1./sqrt(auxF1));
-         bufferGain[1][iant][i].imag(0.0);
        } else if (isDterm) {
          bufferGain[0][iant][i].real(auxF0);
          bufferGain[0][iant][i].imag(auxF2);
@@ -604,31 +596,22 @@ void CalTable::applyInterpolation(int iant, int mode, std::complex<float> *gain[
 
 
 
-  switch (mode) {
-    case 0: // Normal mode.
 
-      for (i=0; i< MSChan; i++) {
-          gain[0][i] = bufferGain[0][iant][i];
-          gain[1][i] = bufferGain[1][iant][i];
-      };
-
+  for (i=0; i< MSChan; i++) {
+    switch (mode) {
+      case 0: // Normal mode.
+         gain[0][i] = bufferGain[0][iant][i];
+         gain[1][i] = bufferGain[1][iant][i];
         break;
-
-    case 1:   // Addition mode. 
-      for (i=0; i< MSChan; i++) {
+      case 1:   // Addition mode. 
          gain[0][i] +=  bufferGain[0][iant][i];
          gain[1][i] +=  bufferGain[1][iant][i];
-      };
-
        break;
-
-    case 2:  // Product mode.
-      for (i=0; i< MSChan; i++) {
+      case 2:  // Product mode.
          gain[0][i] *=  bufferGain[0][iant][i]; 
          gain[1][i] *=  bufferGain[1][iant][i];
+         break;
      };
-
-       break;
 
   };
 

@@ -8,6 +8,4 @@ AC_OUTPUT([ \
 	Makefile \
 	difxdb/difxarchive/Makefile \
 	difxdb/difxexport/Makefile 
-	difxdb/prepDifx/Makefile 
-	hops/Makefile
 ])

@@ -29,8 +29,8 @@ def parseOptions():
     epi += ' a list of input files may be provided as positional'
     epi += ' on the command line.  You may need the *.vex.obs file'
     epi += ' if you wish to run difx2mark4 and have the root be correct.'
-    use = '%(prog)s [options] [input_file] [...]\n  Version'
-    use += ' $Id$'
+    use = '%(prog)s [options] [input_file] [...]\n'
+    use += '  Version $Id$'
     parser = argparse.ArgumentParser(epilog=epi, description=des, usage=use)
     # options
     parser.add_argument('-l', '--suffices', dest='suffices',
@@ -135,11 +135,9 @@ def do_copy(o, src, dst):
     if os.path.isfile(src):
         if o.verb: print do_copy.__doc__ % ('file', src, dst)
         shutil.copy(src, dst)
-        os.chmod(dst, 0644)
     else:
         if o.verb: print do_copy.__doc__ % (' dir', src, dst)
         shutil.copytree(src, dst)
-        os.chmod(dst, 0755)
 
 #
 # enter here to do the work
