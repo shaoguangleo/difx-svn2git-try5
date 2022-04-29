@@ -1,7 +1,3 @@
-Version 1.7
-* looks for tirpc via pkgconfig to provide rpc/rpc.h
-* Version for DiFX-2.6, Mar 4, 2019
-
 Version 1.6
 * use bash, not sh
 * Version for DiFX-2.3, Dec 20, 2013

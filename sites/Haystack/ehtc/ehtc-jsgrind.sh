@@ -22,14 +22,16 @@
 [ -z "$subv"  ] && { echo subv  must be defined ; exit 1 ; }
 [ -z "$iter"  ] && { echo iter  must be defined ; exit 1 ; }
 [ -z "$expn"  ] && { echo expn  must be defined ; exit 1 ; }
-<<<<<<< HEAD
-# [ -z "$label" ] && { echo label must be defined ; exit 1 ; } ### FIXME: Readme-Cycle?.txt declares 'label', ignored, as it gets overwritten below
-=======
 # "$label" is ignored
->>>>>>> 332681ab5 (Synchronized the recent script and drivepolconvert.py)
 [ -z "$targ"  ] && { echo targ  must be defined ; exit 1 ; }
 [ -z "$dout"  ] && { echo dout  must be defined ; exit 1 ; }
 [ -z "$proj"  ] && { echo proj  must be defined ; exit 1 ; }
+
+# apply joblist -u flag
+[ -z "$uniq"  ] && uniq=false
+[ "$uniq" = 'true' -o "$uniq" = 'false' ] || {
+    echo if defined, uniq must be true or false; }
+$uniq && uf=-u || uf=''
 
 haveffconf=${1-'true'}
 [ "$haveffconf" = true -o "$haveffconf" = false ] || {
@@ -70,12 +72,12 @@ echo "preparing jselect='$jselect' to label='$label'"
 
 $polconvert && {
     # create the list of job inputs as $jobs
-    eval `$ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs $jselect -J`
+    eval `$ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs $jselect -J $uf`
     # display the list of selected jobs
     echo "processing these jobs:"
     echo \
-    $ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs $jselect -R
-    $ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs $jselect -R
+    $ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs $jselect -R $uf
+    $ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs $jselect -R $uf
 
     # review list of jobs, review $scmp, $opts
     echo \
@@ -125,9 +127,10 @@ $makerelease && {
 # stage tarballs and logs in local release directory
 mv tarballs tb-$label
 mkdir -p tb-$label/logs/packaging
-mv logs/$ers-*.log tb-$label/logs/packaging
-mv tbdir/logs/* tb-$label/logs/packaging
-mv $proj-$targ.log tb-$label/logs/packaging
+cp -a logs/$ers-*.log tb-$label/logs/packaging
+cp -a tbdir/logs/* tb-$label/logs/packaging
+cp -a $proj-$targ-$subv.log tb-$label/logs/packaging
+rm -f  logs/$ers-*.log tbdir/logs/* $proj-$targ-$subv.log
 # build the release script
 sed 's/^....//' > tb-$label/release.sh <<EOF
     [ -d $release/$proj-$class ] ||
@@ -145,7 +148,7 @@ sed 's/^....//' > tb-$label/release.sh <<EOF
     mv logs/packaging/* \\
         $release/logs/$proj-$class-packaging
     ( date ; sleep 2 ; chmod 644 nohup.out ; mv nohup.out \\
-        $release/logs/$proj-$class-packaging/$label-$class-release.log ) &
+        $release/logs/$proj-$class-packaging/$label-$class-$subv-release.log )&
     disown
 EOF
 chmod +x tb-$label/release.sh
@@ -160,7 +163,7 @@ rmdir logs || echo logs was not empty when it should be
 echo ''
 echo '#########'
 echo '# execute'
-echo '  cd tb-$label/logs ; echo nohup ./release.sh &'
+echo '  cd tb-$label ; nohup ./release.sh &'
 echo '# when you are ready to release the data'
 echo '#########'
 echo ''

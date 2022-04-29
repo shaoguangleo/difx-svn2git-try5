@@ -44,7 +44,11 @@ b2) bb='BB_2' ;;
 lo|b3) bb='BB_3' ;;
 hi|b4) bb='BB_4' ;;
 esac
-qart="${pcal}.APP.artifacts/${pcal}_${bb}_QA2.ANTAB"
+for artydir in APP.artifacts qa2-diagnostics/$pcal.TSYS_INFO
+do
+  qart="${pcal}.$artydir/${pcal}_${bb}_QA2.ANTAB"
+  [ -f $qart ] && break
+done
 [ -f $qart ] || { echo QA2 antab $qart not found ; exit 2 ; }
 
 # note the dpfu used in production and that used in QA2
@@ -57,6 +61,10 @@ eval `awk 'NR==1{print $4;exit}' $qart`  # defines DPFU
 [ $# -gt 0 ] || { echo no ANTAB files found to process ; exit 3 ; }
 
 # use awk for processing of the antab files
+# the penultimate line is a backwards compatibility bug for a version
+# of the QA2 deliverable which was tied to days from Jan 1 2017, rather
+# than day of current year--it can probably be deleted going forwards
+# as that bug was fixed.
 awks='
 decimate && NR>6 && (NR)%'$decimation' != 0 {next;}
 NR < 4 {next;}
@@ -66,6 +74,7 @@ NR>6 && substr($2,3,1) ~/:/ {dy=$1;hr=substr($2,1,2);mn=substr($2,4,8);}
 NR>6 && NF==3 {loc=$3;hic=$3}
 NR>6 && NF>3 {loc=0.0;nlo=0; for(c=3; c<NL;c++){loc+=$c;nlo++;} loc = loc/nlo;}
 NR>6 && NF>3 {hic=0.0;nhi=0; for(c=NL;c<NF;c++){hic+=$c;nhi++;} hic = hic/nhi;}
+NR>6 && dy > 365 {dy=dy - 365;}
 NR>6 {printf("%.8f  %.4f %.4f\n", (dy+hr/24.0+mn/1440.0),loc, hic);}
 '
 

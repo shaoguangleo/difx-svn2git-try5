@@ -24,7 +24,6 @@ from difxdb.model.dbConnection import Schema, Connection
 from difxdb.model.model import ExportFile
 from difxdb.business.versionhistoryaction import *
 from difxdb.business.experimentaction import *
-from difxdb.business.exportfileaction import *
 from difxdb.difxdbconfig import DifxDbConfig
 from string import lower, strip
 
@@ -34,7 +33,7 @@ __build__= "$Revision$"
 __date__ ="$Date$"
 __lastAuthor__="$Author$"
 
-ftpPath = "/ftp/vlbiarchive/correlator"
+ftpPath = "/ftp/correlator"
 exportName = "EXPORT"
 
 # minimum database schema version required by program
@@ -200,8 +199,7 @@ def deleteExportFiles(session, expCode):
             session.close()
             sys.exit("Cannot delete directory: %s. Aborting!" % dir)
     
-    deleteExportFilesbyExperimentId(session, experiment.id)
-
+    experiment.exportFiles = []
     session.flush()
     session.commit()
 
