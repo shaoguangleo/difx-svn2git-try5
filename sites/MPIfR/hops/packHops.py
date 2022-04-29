@@ -17,11 +17,11 @@
 #===========================================================================
 # SVN properties (DO NOT CHANGE)
 #
-# $Id$
-# $HeadURL$
-# $LastChangedRevision$
-# $Author$
-# $LastChangedDate$
+# $Id: packHops.py 8200 2018-03-20 12:11:46Z HelgeRottmann $
+# $HeadURL: https://svn.atnf.csiro.au/difx/sites/MPIfR/hops/packHops.py $
+# $LastChangedRevision: 8200 $
+# $Author: HelgeRottmann $
+# $LastChangedDate: 2018-03-20 13:11:46 +0100 (Tue, 20 Mar 2018) $
 #
 #============================================================================
 

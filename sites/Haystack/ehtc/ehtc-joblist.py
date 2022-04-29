@@ -6,6 +6,8 @@
 #
 '''
 Script to parse a joblist and a vex file and produce lists of job numbers
+
+$Id: ehtc-joblist.py 2493 2018-08-11 22:06:50Z gbc $
 '''
 
 import argparse
@@ -31,7 +33,7 @@ def parseOptions():
     epi += ' try this: '
     epi += ' ehtc-joblist.py -i *.input -o *.vex.obs -p na -s 3C279 -R'
     use = '%(prog)s [options]\n'
-    use += '  Version $Id: ehtc-joblist.py 3057 2020-09-04 15:39:09Z gbc $'
+    use += '  Version $Id: ehtc-joblist.py 2493 2018-08-11 22:06:50Z gbc $'
     parser = argparse.ArgumentParser(epilog=epi, description=des, usage=use)
     inputs = parser.add_argument_group('input options', inp)
     action = parser.add_argument_group('action options', act)
@@ -57,11 +59,6 @@ def parseOptions():
         metavar='FILE', default='',
         help='difx2mark4 station code file augmented with a column'
             + ' of number of polarizations per station')
-    inputs.add_argument('-x', '--usev2x', dest='usev2x',
-        action='store_true', default=False,
-        help='allow use of VEX2XML in input processing, this is a '
-            + 'different path to gathering information not yet '
-            + 'thoroughly tested and thus should not be used')
     action.add_argument('-A', '--antennas', dest='antennas',
         action='store_true', default=False,
         help='provide a list of antennas')
@@ -118,11 +115,6 @@ def parseOptions():
     select.add_argument('-u', '--uniq', dest='uniq',
         action='store_true', default=False,
         help='Restrict jobs to a uniq set of largest job numbers')
-    select.add_argument('-a', '--autos', dest='autos',
-        action='store_true', default=False,
-        help='If you are not using exhaustiveAutocorrs=True, set this. ' +
-            'In counting the fringes, crosscorrelations between datastreams ' +
-            'will increase the count of expected fringes.')
     tester.add_argument('-V', '--Vex', dest='vex',
         metavar='VEXTIME', default='',
         help='convert a Vex Time into MJD (and exit)')
@@ -343,8 +335,6 @@ def doParseVex(o):
         if p.returncode:
             err = 'Return code %d from VEX2XML' % p.returncode
             raise RuntimeError, err
-    else:
-        raise Exception, 'no file ' + o.vexobs + ' to parse'
     o.vextree = xml.etree.ElementTree.parse(o.vxoxml)
     os.unlink(o.vxoxml)
 
@@ -487,7 +477,7 @@ def adjustOptions(o):
         tcmd = 'type VEX2XML >/dev/null'
         if not o.verb: tcmd = tcmd + ' 2>&1'
         rc = os.system(tcmd)
-        if rc == 0 and o.usev2x: doParseVex(o)
+        if rc == 0: doParseVex(o)
         if o.vextree:
             doFindProj(o)
             doFindSrcs(o)
@@ -691,22 +681,12 @@ def doGroups(o, doLabels):
         else:                                                    clss = 'cal'
         ans.add(':'.join([proj,targ,clss]))
     if doLabels:
-        #print 'false && { # start with a short job'
-        last='zippo'
-        print '# The tests with exit are a reminder to make adjustments above'
+        print 'false && { # start with a short job'
         for a in sorted(list(ans)):
             proj,targ,clss = a.split(':')
-            if proj != last and last != 'zippo':
-                print '}'
-            if proj != last:
-                print '[ -z "$QA2_' + proj + '" ] && echo QA2 error && exit 1'
-                print '$QA2_' + proj + ' && {'
-                print '  echo processing QA2_' + proj + ' job block.'
             exprt=('  export proj=%s targ=%s class=%s' % tuple(a.split(':')))
             print  '%-54s    label=%s-%s' % (exprt,proj,targ)
-            print ('  nohup $ehtc/ehtc-jsgrind.sh < /dev/null ' +
-                '> $label-$subv.log 2>&1' )
-            last = proj
+            print  '  nohup $ehtc/ehtc-jsgrind.sh < /dev/null > $label-$subv.log 2>&1'
         print '}'
     else:
         for a in sorted(list(ans)):
@@ -737,7 +717,7 @@ def doReportLostScans(o):
             name, o.lostscans[name][1], o.lostscans[name][3])
     print
 
-def prodDict(verb, codefile, autos):
+def prodDict(verb, codefile):
     '''
     Open the file and calculate the number of fringes for all
     possible baseline product combinations.
@@ -755,14 +735,12 @@ def prodDict(verb, codefile, autos):
             pass
     if verb: print 'station',spol
     if verb: print 'scodes',sdic
-    # collect in bpol[ref+rem] the number of polarizations correlated
     for ref in spol:
         for rem in spol:
             if spol[ref] > 0 and spol[rem] > 0:
-                # exhaustiveAutocorrs=True will need else clause
-                if ref == rem and autos:
+                if ref == rem:  # auto
                     bpol[ref+rem] = spol[ref]
-                else:
+                else:           # cross
                     bpol[ref+rem] = spol[ref]*spol[rem]
     if verb: print 'baseline',bpol
     cf.close()
@@ -809,7 +787,7 @@ def doCheck(o):
     '''
     doLostScans(o)
     if len(o.lostscans) > 0: doReportLostScans(o)
-    o.scodes, o.blproddict = prodDict(o.verb, o.codes, o.autos)
+    o.scodes, o.blproddict = prodDict(o.verb, o.codes)
     for jn in o.cabbage:
         antennas = o.cabbage[jn][2]
         vexinfo = o.cabbage[jn][3]
@@ -993,14 +971,12 @@ def updateBLPOL(jobinput, verb):
         blf_hit = blf_re.search(line)
         if blf_hit:
             fq_peer = int(blf_hit.group(2))
-            try: fe_peer = ds_indices[bl_peer][3][fq_peer]
-            except: fe_peer = 'nada'    ### specline error
+            fe_peer = ds_indices[bl_peer][3][fq_peer]
             continue
         blg_hit = blg_re.search(line)
         if blg_hit:
             fq_this = int(blg_hit.group(2))
-            try: fe_this = ds_indices[bl_this][3][fq_this]
-            except: fe_this = 'nowy'    ### specline error
+            fe_this = ds_indices[bl_this][3][fq_this]
             if fe_peer == fe_this:
                 bl_indices[bl_index][3].append(fe_peer)
             else:
