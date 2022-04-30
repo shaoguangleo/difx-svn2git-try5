@@ -31,7 +31,7 @@ def parseOptions():
     epi += ' try this: '
     epi += ' ehtc-joblist.py -i *.input -o *.vex.obs -p na -s 3C279 -R'
     use = '%(prog)s [options]\n'
-    use += '  Version $Id: ehtc-joblist.py 3048 2020-09-02 15:03:00Z gbc $'
+    use += '  Version $Id: ehtc-joblist.py 3057 2020-09-04 15:39:09Z gbc $'
     parser = argparse.ArgumentParser(epilog=epi, description=des, usage=use)
     inputs = parser.add_argument_group('input options', inp)
     action = parser.add_argument_group('action options', act)
@@ -115,6 +115,14 @@ def parseOptions():
         metavar='STRING', default='',
         help='The name of the ALMA project as declared by intents ' +
             'ALMA:PROJECT_FIRST_SCAN:... and ALMA:PROJECT_FINAL_SCAN:...')
+    select.add_argument('-u', '--uniq', dest='uniq',
+        action='store_true', default=False,
+        help='Restrict jobs to a uniq set of largest job numbers')
+    select.add_argument('-a', '--autos', dest='autos',
+        action='store_true', default=False,
+        help='If you are not using exhaustiveAutocorrs=True, set this. ' +
+            'In counting the fringes, crosscorrelations between datastreams ' +
+            'will increase the count of expected fringes.')
     tester.add_argument('-V', '--Vex', dest='vex',
         metavar='VEXTIME', default='',
         help='convert a Vex Time into MJD (and exit)')
@@ -335,6 +343,8 @@ def doParseVex(o):
         if p.returncode:
             err = 'Return code %d from VEX2XML' % p.returncode
             raise RuntimeError, err
+    else:
+        raise Exception, 'no file ' + o.vexobs + ' to parse'
     o.vextree = xml.etree.ElementTree.parse(o.vxoxml)
     os.unlink(o.vxoxml)
 
@@ -494,6 +504,12 @@ def adjustOptions(o):
             doInputSrcs(o)
             o.rubbage = o.cabbage       # can only use calc files
             o.antlers = o.antset
+    try:
+        if   os.environ['uniq'] == 'true':  o.uniq = True
+        elif os.environ['uniq'] == 'false': o.uniq = False
+        else: raise Exception, 'Illegal uniq value: ' + os.environ['uniq']
+    except:
+        pass
     return o
 
 def doSelectData(o):
@@ -543,6 +559,38 @@ def doSelectProject(o):
                 if o.verb: print '#P',j,str(newjobs[j])
     o.rubbage = newjobs
 
+def bustedCorr(o_inputs, jobnum):
+    '''
+    If required correlation files are missing, return True
+    '''
+    for ef in ['.input','.calc','.im','.difx']:
+        cfile = o_inputs + '_' + jobnum + ef
+        if not os.path.exists(cfile):
+            return True
+    return False
+
+def doSelectUniq(o):
+    '''
+    Restrict to jobs with largest job number for repeat correlations.
+    As a side effect, discard jobs that are missing correlation files.
+    o.jobbage[#] = [start,stop,[antennas],[name,start,smjd,dur,vsrc,mode]]
+    '''
+    if not o.uniq: return
+    if o.rubbage == None or len(o.rubbage) == 0: return
+    if o.verb: print '# Reducing joblist to uniq job set'
+    scandict = {}
+    joblist = sorted(o.rubbage.keys())
+    joblist.reverse()
+    for j in joblist:
+        job = o.rubbage[j]
+        ky = "%s-%s" % (job[3][0], job[3][4])
+        if ky in scandict or bustedCorr(o.inputs, j):
+            if o.verb: print '# Discarding duplicate or broken job',j
+            del(o.rubbage[j])
+            continue
+        else:
+            scandict[ky] = [j]
+
 def selectOptions(o):
     '''
     Apply selections to limit things reported
@@ -550,6 +598,7 @@ def selectOptions(o):
     doSelectData(o)
     doSelectSource(o)
     doSelectProject(o)
+    doSelectUniq(o)
     return o
 
 def doAntennas(o):
@@ -646,8 +695,6 @@ def doGroups(o, doLabels):
         last='zippo'
         print '# The tests with exit are a reminder to make adjustments above'
         for a in sorted(list(ans)):
-<<<<<<< HEAD
-=======
             proj,targ,clss = a.split(':')
             if proj != last and last != 'zippo':
                 print '}'
@@ -655,20 +702,11 @@ def doGroups(o, doLabels):
                 print '[ -z "$QA2_' + proj + '" ] && echo QA2 error && exit 1'
                 print '$QA2_' + proj + ' && {'
                 print '  echo processing QA2_' + proj + ' job block.'
->>>>>>> f8b06a2fa (Various bits of cleanup (mostly help and commentary).)
             exprt=('  export proj=%s targ=%s class=%s' % tuple(a.split(':')))
-<<<<<<< HEAD
-            print  '%-56s ; label=$proj-$targ' % exprt
-=======
             print  '%-54s    label=%s-%s' % (exprt,proj,targ)
-<<<<<<< HEAD
->>>>>>> e3099c5bf (synchronizing branches)
-            print  '  nohup $ehtc/ehtc-jsgrind.sh < /dev/null > $label.log 2>&1'
-=======
             print ('  nohup $ehtc/ehtc-jsgrind.sh < /dev/null ' +
                 '> $label-$subv.log 2>&1' )
             last = proj
->>>>>>> f8b06a2fa (Various bits of cleanup (mostly help and commentary).)
         print '}'
     else:
         for a in sorted(list(ans)):
@@ -699,7 +737,7 @@ def doReportLostScans(o):
             name, o.lostscans[name][1], o.lostscans[name][3])
     print
 
-def prodDict(verb, codefile):
+def prodDict(verb, codefile, autos):
     '''
     Open the file and calculate the number of fringes for all
     possible baseline product combinations.
@@ -717,12 +755,14 @@ def prodDict(verb, codefile):
             pass
     if verb: print 'station',spol
     if verb: print 'scodes',sdic
+    # collect in bpol[ref+rem] the number of polarizations correlated
     for ref in spol:
         for rem in spol:
             if spol[ref] > 0 and spol[rem] > 0:
-                if ref == rem:  # auto
+                # exhaustiveAutocorrs=True will need else clause
+                if ref == rem and autos:
                     bpol[ref+rem] = spol[ref]
-                else:           # cross
+                else:
                     bpol[ref+rem] = spol[ref]*spol[rem]
     if verb: print 'baseline',bpol
     cf.close()
@@ -769,7 +809,7 @@ def doCheck(o):
     '''
     doLostScans(o)
     if len(o.lostscans) > 0: doReportLostScans(o)
-    o.scodes, o.blproddict = prodDict(o.verb, o.codes)
+    o.scodes, o.blproddict = prodDict(o.verb, o.codes, o.autos)
     for jn in o.cabbage:
         antennas = o.cabbage[jn][2]
         vexinfo = o.cabbage[jn][3]
@@ -953,12 +993,14 @@ def updateBLPOL(jobinput, verb):
         blf_hit = blf_re.search(line)
         if blf_hit:
             fq_peer = int(blf_hit.group(2))
-            fe_peer = ds_indices[bl_peer][3][fq_peer]
+            try: fe_peer = ds_indices[bl_peer][3][fq_peer]
+            except: fe_peer = 'nada'    ### specline error
             continue
         blg_hit = blg_re.search(line)
         if blg_hit:
             fq_this = int(blg_hit.group(2))
-            fe_this = ds_indices[bl_this][3][fq_this]
+            try: fe_this = ds_indices[bl_this][3][fq_this]
+            except: fe_this = 'nowy'    ### specline error
             if fe_peer == fe_this:
                 bl_indices[bl_index][3].append(fe_peer)
             else:

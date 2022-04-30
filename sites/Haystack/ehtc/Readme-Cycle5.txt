@@ -1,13 +1,14 @@
 #
-# Instructions for polconversion/packaging for <Observation>/<Band>
+### Instructions for polconversion/packaging for <Observation>/<Band>
 #
 # This version is appropriate to Cycle5 (b1..b4) (2018 and later).
 # The template for this file is in:     $ehtc/Readme-Cycle5.txt
-# rename it to:      $exp-$subv-v${vers}${ctry}p${iter}r${relv}.logfile
+# rename it to:  $exp-$subv-v${vers}${ctry}${stry}p${iter}r${relv}.logfile
 #
 # Make a copy for each band/track and customize the environment
 # variables at the top of the ENVIRONMENT section.
 #  v${vers}${ctry}  refers to the DiFX correlation output used
+#  ${stry}          refers to the sub-band (b1..4) correlation try
 #  p${iter}         refers to the polconvert iteration
 #  r${relv}         refers to the release name
 #
@@ -28,10 +29,7 @@
 #
 
 # ENVIRONMENT =====================
-# go to working host and cut & paste or pipe it:
-# cat this.logfile | ssh -2x host & disown
-# ---
-# setup versioned tools -- different per site
+# setup versioned tools -- very different per site
 # script that adds CASA 4.7.2 bin to PATH
 source ~/lib/casa.setup
 source /swc/difx/setup-DiFX-2.6.2.bash
@@ -44,13 +42,8 @@ source $DIFXROOT/bin/hops.bash
 # site vars: these point to the mirror or difx SVN tree
 export hays=/data-sc24/EHT_ARCHIVE/Hays_Output2
 export bonn=/data-sc24/EHT_ARCHIVE/Bonn_Output2
-<<<<<<< HEAD
-export dsvn=/swc/difx/difx-svn
-export dsvn=/swc/difx/difx-svn/master_tags/DiFX-2.5.3/
-=======
 #export dsvn=/swc/difx/difx-svn
 export dsvn=/swc/difx/difx-svn/master_tags/DiFX-2.6.2/
->>>>>>> 2d62e03a7 (Synchronized versions; readme updated for the eventual 2.6.2 tag.)
 # site vars: script area, correlator work dir and release directory
 #export ehtc=/sites/Haystack/ehtc
 export ehtc=$dsvn/sites/Haystack/ehtc
@@ -62,38 +55,17 @@ export work=/data-sc15/difxoper
 
 # principal vars for tracking all the revisions and forth
 export exp=e18...
-export vers=?       # major correlator version
-export ctry=''      # minor correlator version
+export vers=?       # major correlator top-level version
+export ctry=''      # minor correlator top-level version
 export subv=b?      # b1 b2 b3 b4
-export iter=?       # numbered consecutively
+export stry='a'     # minor correlator sub-band version
+export iter=?       # polconvert iteration
 export relv=?       # archive release name number
 export flab=''      # re-fourfitting version (if needed)
 export expn=3...    # HOPS exp # (from Mike Titus)
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-# polconvert variables and other option variables
-# $pdir depend on QA2 development
-# $dpfu is estimated from QA2 products using this:
-# casa --nologger --nologfile -c $DIFXROOT/share/polconvert/DPFU_scanner.py
-# from which a single dpfu (degrees / flux unit) should be estimated for
-# the track or campaign.
-export pcal=TRACK_?                            # per QA2 delivery
-export pdir=$hays/$exp/$exp-$vers/qa2
-export dpfu=0.0308574                          # ave over session, val TBD
-export scmp='PV,MG,SW,AX,LM,SZ'                # cycle5
-export opts="-r -P15 -S $scmp -f 4 -A $dpfu -q v8"
-export fitsname=false
-export aeditjob=$ehtc/ehtc-aeditjob.sh
-=======
-# $dpfu is estimated from QA2 products, see one-time setup
-=======
 # $dpfu is estimated from QA2 products, see one-time setup below
-<<<<<<< HEAD
->>>>>>> 2d62e03a7 (Synchronized versions; readme updated for the eventual 2.6.2 tag.)
-=======
 # it must be coordinated with the other correlator
->>>>>>> f8b06a2fa (Various bits of cleanup (mostly help and commentary).)
 export dpfu=0.0308574
 
 # a list of stations in best order for polconvert plots
@@ -118,6 +90,8 @@ $QA2_proj && {
 $QA2_na && echo QA2 logic error && exit
 export opts="-r -P $npar -S $scmp -f $npcf -A $dpfu -q $qpar"
 export plst="list of all pcal labels"
+export pdir=$hays/$exp/$exp-$vers/qa2
+export ptar=$plab.APP_DELIVERABLES.tgz
 
 # see the tarball script for what this does, should be false
 export fitsname=false
@@ -125,56 +99,48 @@ export fitsname=false
 # which implicitly sets the -u flag on any use of $ehtc/ehtc-joblist.py.
 # If $work is more messed up than that, you're on your own for coping.
 export uniq=true    # or export uniq=false
->>>>>>> ff2f08585 (copying to other relevant locations)
 
-# derived vars
+# other derived vars
 export release=$arch/$exp/$exp-$relv
-export dout=$corr/$exp/v${vers}$ctry/$subv
+export dout=$corr/$exp/v${vers}$ctry/$subv$stry
 export evs=$exp-$vers-$subv
 export ers=$exp-$relv-$subv
-export ptar=$pcal???label???.APP_DELIVERABLES.tgz
+export aeditjob=$ehtc/ehtc-aeditjob.sh
 
 # check:
-wordcount=`( 
+wordcount=`(
 echo =============================================================== && \
-<<<<<<< HEAD
-echo $exp $vers .$ctry. $subv $iter $relv .$flab. $expn && \
-echo $evs $ers $opts $fitsname $aeditjob && \
-=======
 echo $exp $vers .$ctry. $subv .$stry. $iter $relv .$flab. $expn && \
 echo $evs $ers $opts && \
 echo $fitsname $aeditjob && \
->>>>>>> 551aef1a1 (Synchronizing additional fiddly scripting in eht processing.)
 echo $dout && \
 echo $ptar $pcal $qpar && \
 echo $pdir $npar $scmp $npcf $dpfu && \
 echo $release && \
 echo =============================================================== && \
-type casa && \ 
+type casa && \
 type mpifxcorr && \
 type fourfit && \
 echo =============================================================== 
 ) | wc -w`
-<<<<<<< HEAD
-[ "$wordcount" -eq 39 ] && echo variables are ok || echo issue with variables
-=======
 [ "$wordcount" -eq 46 ] && echo variables are ok || {
     [ "$wordcount" -eq 43 ] && echo variables ok, but QA2 all false ||
     { echo issue with variables ; exit ; }
 }
->>>>>>> 551aef1a1 (Synchronizing additional fiddly scripting in eht processing.)
 
 # Nth TIME SETUP =================
-cd $work/$exp/v${vers}${ctry}p${iter}/$subv
+cd $work/$exp/v${vers}${ctry}p${iter}/$subv${stry}
+ls -l $exp-$subv-v${vers}${ctry}${stry}p${iter}r${relv}.logfile
 
 # ONE TIME SETUP =================
 false && { # ONE TIME SETUP
 [ -d $work/$exp/v${vers}${ctry}p${iter} ] ||
     mkdir $work/$exp/v${vers}${ctry}p${iter}
-[ -d $work/$exp/v${vers}${ctry}p${iter}/$subv ] ||
-    mkdir $work/$exp/v${vers}${ctry}p${iter}/$subv
+[ -d $work/$exp/v${vers}${ctry}p${iter}/$subv${stry} ] ||
+    mkdir $work/$exp/v${vers}${ctry}p${iter}/$subv${stry}
 [ -d $release ] || mkdir -p $release
-cd $work/$exp/v${vers}${ctry}p${iter}/$subv
+pwd ; cd $work/$exp/v${vers}${ctry}p${iter}/$subv${stry} ; pwd
+ls -l $exp-$subv-v${vers}${ctry}${stry}p${iter}r${relv}.logfile
 
 # once per trak, not per band, set up for polconvert data
 # from the mirror after consultation with the other correlator
@@ -188,18 +154,26 @@ cd $work/$exp/v${vers}${ctry}p${iter}/$subv
 # locally, use a common qa2 dir for multiple bands
 [ -d $pdir ] || { mkdir -p $pdir && echo need DELIVERABLES tarball in $pdir ; }
 [ -d ../qa2 ] || { mkdir ../qa2 ; }
-[ -d ../qa2 -a -d ../qa2/$pcal.qa2-diagnostics ] ||
+# for every QA2_proj, define $pcal,$pdir,$ptar and untar the $pdir/$ptar files
+for pc in $plst ; do ls -d ../qa2/$pc.qa2-diagnostics ; done
+for pc in $plst ; do [ -d ../qa2 -a -d ../qa2/$pc.qa2-diagnostics ] ||
+    echo $pc tables are missing, you need to untar them. ; done
+# source the setup for each QA2_proj and then do this snippet:
+[ -d ../qa2 -a -d ../qa2/$pc.qa2-diagnostics ]
     { pushd ../qa2 ; tar zxf $pdir/$ptar ;
       for r in README* ; do mv $r $pcal.$r ; done ; popd ; }
 
 # for every QA2_proj, link in the QA2 package tables
-for d in ../qa2/$pcal.* ; do ln -s $d . ; done
-ls -ld $pcal.*
+for pc in $plst; do
+for d in ../qa2/$pc.* ; do ln -s $d . ; done; ls -ld $pc.*
+done
 
 # Review README.DRIVEPOLCONVERT: it may specify something other than 'v8'
 # which is the value passed as the -q argument to drivepolconvert.py
 # via the opts='...' assignment above.  Make sure you have this right.
-echo -n 'CHECK: ' $opts '== ' ; cat $pcal.README.DRIVEPOLCONVERT
+for pc in $plst; do
+echo -n 'CHECK: ' $opts '== ' ; cat $pc.README.DRIVEPOLCONVERT
+done
 
 # for every QA2 package, estimate a common $dpfu for the campaign
 # dpfu (degrees / flux unit) appears in the ANTAB files and it is a
@@ -226,6 +200,7 @@ cp -p $dout/*vex.obs .
 [ -d $dout/$expn ] && mv $dout/$expn $dout/$expn.save
 
 # ehtc-tarballs.sh haxp expects *.codes in $dout otherwise it fails silently
+[ -f $dout/$exp.codes ] && cmp $ehtc/ehtc-template.codes $dout/$exp.codes ||
 cp -p $ehtc/ehtc-template.codes $dout/$exp.codes
 
 # clean slate fourfit control file
@@ -259,7 +234,7 @@ ls -l $ers.conf
 # maintain notes while you execute and post this file periodically to
 [ -d $release/logs ] || mkdir $release/logs
 # verify that this file is:
-# $exp-$subv-v${vers}${ctry}p${iter}r${relv}.logfile
+ls -l $exp-$subv-v${vers}${ctry}${stry}p${iter}r${relv}.logfile
 
 # provide a number of summary reports prior to any grinding
 $ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs -B > $ers-bl-pol-map.txt
@@ -269,34 +244,18 @@ $ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs -R > $ers-jobs-map.txt
 ( cd $dout ; summarizeDifxlogs.py    ) > $ers-difxlog-sum.txt
 ( cd $dout ; summarizeDifxlogs.py -c ) > $ers-difxlog-clr.txt
 cp -p $ers*.txt $release/logs
-cp -p $exp-$subv-v${vers}${ctry}p${iter}r${relv}.logfile $release/logs
+cp -p $exp-$subv-v${vers}${ctry}${stry}p${iter}r${relv}.logfile $release/logs
 
 #
 # Run the GENERAL PROCESSING commands on a few jobs to make suitable data
 # for generating "good enough" manual phase cals (i.e. for survey use)
+# Ideally you should use one QA2_proj.
 # Make ### notes suitable for later grepping
 #
-<<<<<<< HEAD
-<<<<<<< HEAD
-### Notes on building $ers.conv
-# scans to use grep from *jobs*
-=======
-### Notes on building $ers.conf
-# pick scans to use grep from *jobs*
-# stations: ...
-=======
 # Notes on building $ers.conf:
 # pick the scans to use based on greps from *jobs*
-# available stations: ...
->>>>>>> ff2f08585 (copying to other relevant locations)
+### available stations: ...
 awk '{print $5}' $ers-jobs-map.txt | tr '-' \\012 | sort | uniq -c
-<<<<<<< HEAD
-# types of baselines: ...
-awk '{print $5}' $ers-jobs-map.txt | sort | uniq -c
->>>>>>> 332681ab5 (Synchronized the recent script and drivepolconvert.py)
-
-jobs=`echo $exp-$vers-${subv}_{,}.input` ; echo $jobs
-=======
 awk '{print $5}' $ers-jobs-map.txt | tr '-' \\012 | sort | uniq | tr \\012 ' '
 ### types of baselines: ...
 awk '{print $5}' $ers-jobs-map.txt | sort | uniq -c
@@ -307,34 +266,13 @@ jobs=`echo $exp-$vers-${subv}_{,}.input` ; echo $jobs
 # reminder: for multi-project tracks you will need to update
 # $opts and $pcal using the QA_* logic variables above.
 # --override-version  on difx2mark4 should not be necessary
->>>>>>> f8b06a2fa (Various bits of cleanup (mostly help and commentary).)
 prepolconvert.py -v -k -s $dout $jobs
 drivepolconvert.py -v $opts -l $pcal $jobs
 for j in $jobs ;\
 do difx2mark4 -e $expn -s $exp.codes --override-version ${j/input/difx} ; done
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
-
->>>>>>> 918238954 (more nits)
-=======
->>>>>>> ff2f08585 (copying to other relevant locations)
 # identify roots:
-<<<<<<< HEAD
-roots=`cd $expn ; ls */target*` ; echo $roots
->>>>>>> 332681ab5 (Synchronized the recent script and drivepolconvert.py)
-cd $expn ; cp ../$ers.conf .
-<<<<<<< HEAD
-$ehtc/est_manual_phases.py -c $ers.conf -r ...
-grep ^if.station $ers.conf | sort | uniq -c
-$ehtc/est_manual_phases.py -c $ers.conf -r ...
-=======
-=======
 roots=`cd $expn ; ls */$target*` ; echo $roots
->>>>>>> 8b4a7200e (propagating changes)
 # For each root run this command, but set -s argument
 # with a comma-sep list of single letter station codes
 # that should be fit (relative to A as first station).
@@ -344,38 +282,20 @@ $ehtc/est_manual_phases.py -c $ers.conf \
     -r first-root -s A,x,y,z,...
 grep ^if.station $ers.conf | sort | uniq -c
 $ehtc/est_manual_phases.py -c $ers.conf \
-<<<<<<< HEAD
-    -r second-root -s A,...
->>>>>>> 918238954 (more nits)
-=======
     -r second-root -s A,p,q,r,...
->>>>>>> 8b4a7200e (propagating changes)
 grep ^if.station $ers.conf | sort | uniq -c
 #...
-<<<<<<< HEAD
-# are all set up?
-# fourfit -bA? -c $ers.conf $roots ; fplot */A[^A].B*
-=======
 ### are all manual phases set up plausibly?  tell us what you think.
 # for r in $roots ; do fourfit -bA? -c $ers.conf $r & done ; wait
 # fplot */A[^A].B*
->>>>>>> 2d62e03a7 (Synchronized versions; readme updated for the eventual 2.6.2 tag.)
 
-# be sure to clean up afterwards
+# be sure to clean up afterwards, especially to move $expn aside
 cd ..
 cp -p $expn/$ers.conf .
 cp -p $expn/$ers.conf $release/logs
-<<<<<<< HEAD
-rm -rf $expn ${jobs//input/*}
-### now have $ers.conf
-
-# generate TODO list with:
-$ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs -G
-=======
 mv $expn ff-conf-$expn
 rm -rf ${jobs//input/*}
 # now have $ers.conf
->>>>>>> ff2f08585 (copying to other relevant locations)
 } # ONE TIME SETUP
 
 # EXECUTION NOTES ======================
@@ -402,31 +322,18 @@ false && {
 ### log of $ers commands goes here
 ###
 
-<<<<<<< HEAD
-
-# you can launch as a remote job with:
-# cat this.logfile | ssh -2x host & disown
-# or on the processing host with:
-# sh this.logfile & disown
-=======
 # once you have edited this file to run a block of grinding jobs
 # with appropriate true and false controls, you can launch with:
 # sh *.logfile & disown
 # (there should be only one *.logfile)
->>>>>>> 2d62e03a7 (Synchronized versions; readme updated for the eventual 2.6.2 tag.)
 #--------------------------------------------------------------------------
-<<<<<<< HEAD
-# While processing ======================
-=======
 #
 # Final Steps ======================
-# This section is always MANUL.
+# This section is always MANUAL.
 #
 false && {
->>>>>>> 332681ab5 (Synchronized the recent script and drivepolconvert.py)
 # save logfile incrementally or when done:
-false && {
-cp -p $exp-$subv-v${vers}${ctry}p${iter}r${relv}.logfile $release/logs
+cp -p $exp-$subv-v${vers}${ctry}${stry}p${iter}r${relv}.logfile $release/logs
 ls -l $release/logs
 
 # capture the performance on polconversion for future reference
@@ -452,8 +359,11 @@ antabfiles=`ls -l $evs*polcon*/*ANTAB | wc -l`
     echo $polconversions -ne $allifsplots '(polconversions ne allifplots)' ; }
 [ $polconversions -eq $antabfiles ] || { echo -n '### missing antabfiles ';
     echo $polconversions -ne $antabfiles '(polconversions ne $antabfiles)' ; }
+# generate a list of what is missing (2>&1 >/dev/null captures stderr only)
 for j in `cat $ers-jobs-map.txt | grep -v do.not | awk '{print $1}'`
-    do ls *$j*/*ANTAB *$j*/*TS/ALL*png > /dev/null ; done
+    do ls *$j*/*ANTAB *$j*/*TS/A*png 2>&1 >/dev/null | sed 's/^/### /' ; done
+# paste ### lines here -- these are the jobs missing plots or antabs --
+# ideally these should be investigated and resolved.
 
 # Examine some of the 4fit fringes on questionable cases with
 fplot $ers-*-4fit.$expn.save/$doyhhmm/A[^A].B.*
@@ -465,8 +375,10 @@ compare-baselines-v6.pl -n 10000 -m 10 -f -x AL \
 # verify that fits files are missing what is sensible
 # (delete lines  that are only x because of missing stations)
 cat *fits*/*pclist | egrep ' AA |x ' | sort | uniq |\ 
-    grep -v '#' > $ers-fits-missing.txt ; cat $ers-fits-missing.txt
+    grep -v '#' > $ers-fits-missing.txt
 cp -p $ers-fits-missing.txt $release/logs
+cat $ers-fits-missing.txt | sed 's/^/### /'
+# and paste it here
 
 # Final steps ======================
 # generate some summary aedit pdfs
@@ -491,8 +403,6 @@ for r in tb-* ; do pushd $r ; nohup ./release.sh & disown ; popd ; done
 # and finally after everything is released count the products
 $ehtc/ehtc-release-check.sh | sed 's/^/### /'
 
-<<<<<<< HEAD
-=======
 # one last time
 logfile=$exp-$subv-v${vers}${ctry}${stry}p${iter}r${relv}.logfile
 comment=$exp-$subv-v${vers}${ctry}${stry}p${iter}r${relv}.comment
@@ -500,12 +410,13 @@ grep '^###' $logfile > $comment
 cp -p $logfile $comment $release/logs
 ls -l $release/logs
 
->>>>>>> 551aef1a1 (Synchronizing additional fiddly scripting in eht processing.)
 # Cleanup list ======================
 # after tarballs are delivered and if you want to recover disk space
 rm -rf $exp-$vers-${subv}_*.save
 rm -rf $exp-$relv-${subv}_*.save
 }
+# avoid worrisome error return values
+true
 
 #
 # eof

@@ -3,15 +3,42 @@
 # Script to run the processing for one project/target group.
 # See the processing template for details.
 #
-# Usage: $ehtc/ehtc-jsgrind.sh <fourfit_conf_exists:true/false> <run_polconvert:true/false>
+USAGE="Usage: \$ehtc/ehtc-jsgrind.sh true|false true|false
+
+with these supplied in the environment:
+    \$proj  the ALMA project nickname
+    \$targ  the VEX target name
+    \$class the eht target class (sci, cal or eht)
+
+Both logic variables default to true and that is the normal mode of
+usage from Cycle5 onwards.  Previously the first could be set to false
+to pause the grind and allow development of a fourfit control file.
+The second value controls whether to run polconvert or not.  Thus:
+
+    \$ehtc/ehtc-jsgrind.sh false true
+    # create fourfit control file and then continue to
+    # gather products and create the release.sh script
+    \$ehtc/ehtc-jsgrind.sh false false
+
+or, if a fourfit control file is available (e.g. from prior processing
+of selected scans):
+
+    \$ehtc/ehtc-jsgrind.sh true true
+
+(actually the first boolean is irrelevant of the 2nd is false).
+
+In any case, a full set of environment variables as must be supplied.
+"
 #
-# While developing fourfit control file:
+# While developing fourfit control file (earlier mode of execution):
 #  $ehtc/ehtc-jsgrind.sh false true
 #  $ehtc/ehtc-jsgrind.sh false false
-# once fourfit control file is established:
-#  $ehtc/ehtc-jsgrind.sh #true true
+# once fourfit control file is established (this is the normal mode):
+#  $ehtc/ehtc-jsgrind.sh true true
 #
 [ -z "$exp"   ] && { echo exp   must be defined ; exit 1 ; }
+[ -z "$evs"   ] && { echo evs   must be defined ; exit 1 ; }
+[ -z "$ers"   ] && { echo ers   must be defined ; exit 1 ; }
 [ -z "$expn"  ] && { echo expn  must be defined ; exit 1 ; }
 [ -z "$opts"  ] && { echo opts  must be defined with options for polconvert ;
     exit 1 ; }
@@ -22,14 +49,17 @@
 [ -z "$subv"  ] && { echo subv  must be defined ; exit 1 ; }
 [ -z "$iter"  ] && { echo iter  must be defined ; exit 1 ; }
 [ -z "$expn"  ] && { echo expn  must be defined ; exit 1 ; }
-<<<<<<< HEAD
-# [ -z "$label" ] && { echo label must be defined ; exit 1 ; } ### FIXME: Readme-Cycle?.txt declares 'label', ignored, as it gets overwritten below
-=======
 # "$label" is ignored
->>>>>>> 332681ab5 (Synchronized the recent script and drivepolconvert.py)
 [ -z "$targ"  ] && { echo targ  must be defined ; exit 1 ; }
 [ -z "$dout"  ] && { echo dout  must be defined ; exit 1 ; }
 [ -z "$proj"  ] && { echo proj  must be defined ; exit 1 ; }
+[ -z "$release"  ] && { echo release must be defined ; exit 1 ; }
+
+# apply joblist -u flag
+[ -z "$uniq"  ] && uniq=false
+[ "$uniq" = 'true' -o "$uniq" = 'false' ] || {
+    echo if defined, uniq must be true or false; }
+$uniq && uf=-u || uf=''
 
 haveffconf=${1-'true'}
 [ "$haveffconf" = true -o "$haveffconf" = false ] || {
@@ -48,10 +78,9 @@ polconvert=${2-'true'}
     echo after which you will need to create or update the fourfit
     echo control file and then run this script with two false arguments; }
 [ $haveffconf$polconvert = falsefalse ] && {
-    echo completing the fourfit processing and making the release tarballs; }
-    ### FIXME: action doesn't seem to match description of arg haveffconf, valid should be truefalse
+    echo proceeding to make the release script; }
 [ $haveffconf$polconvert = truefalse  ] && {
-    echo this is a nonsensical set of options...bailing out ; exit 1 ; }
+    echo "$USAGE" ; echo poor logic choices...bailing out. ; exit 1 ; }
 
 # check that these grouping vars are defined
 [ -n "$class" ] || { echo "class='cal|sci|eht' must be defined"; exit 1; }
@@ -70,12 +99,12 @@ echo "preparing jselect='$jselect' to label='$label'"
 
 $polconvert && {
     # create the list of job inputs as $jobs
-    eval `$ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs $jselect -J`
+    eval `$ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs $jselect -J $uf`
     # display the list of selected jobs
     echo "processing these jobs:"
     echo \
-    $ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs $jselect -R
-    $ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs $jselect -R
+    $ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs $jselect -R $uf
+    $ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs $jselect -R $uf
 
     # review list of jobs, review $scmp, $opts
     echo \
@@ -122,6 +151,9 @@ $polconvert && {
 }
 
 $makerelease && {
+[ -d tarballs ] || { echo tarballs dir is missing; exit 2; }
+[ -d logs ] || { echo logs dir is missing; exit 3; }
+[ -d tbdir -a -d tbdir/logs ] || { echo tbdir or tbdir/logs missing; exit 4;}
 # stage tarballs and logs in local release directory
 mv tarballs tb-$label
 mkdir -p tb-$label/logs/packaging
@@ -138,8 +170,16 @@ sed 's/^....//' > tb-$label/release.sh <<EOF
     [ -d $release/logs/packaging ] ||
         mkdir -p $release/logs/$proj-$class-packaging
     cd `pwd`/tb-$label
+    # check mirror space
+    need=\`du -s . | tr -d ' \t.'\`
+    have=\`df $release | tail -1 | awk '{printf("%d", int(\$4*9/10))}'\`
+    echo need \$need 1k blocks, have \$have 1k blocks
+    [ "\$need" -lt "\$have" ] && { echo we appear to have space; }
+    [ "\$need" -lt "\$have" ] || { echo need more space; exit 1; }
+    # ok, safe to do the copy
     for t in *.tar
     do
+        ls -lh \$t
         mv \$t $release/$proj-$class
         ls -lh $release/$proj-$class/\$t
     done

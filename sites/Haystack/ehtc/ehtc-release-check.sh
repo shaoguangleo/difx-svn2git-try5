@@ -11,19 +11,6 @@ exit=${2-'exit'}
 [ -n "$evs" ] || { echo evs not defined in the environment; exit 1; }
 [ -n "$ers" ] || { echo ers not defined in the environment; exit 1; }
 [ -n "$expn" ] || { echo expn not defined in the environment; exit 1; }
-<<<<<<< HEAD
-[ -n "$pcal" ] || { echo pcal not defined in the environment; exit 1; }
-[ `find  -maxdepth 1 -name '*.obs' | wc -l` == 1 ] || { echo found too many '*.obs' files; exit 1; }
-[ -f *.obs ] || { echo missing experiment.obs file; exit 1; }
-
-logcount=`ls -1 $release/logs | grep -v packaging | wc -l`
-$verb && echo $logcount files in $release/logs
-<<<<<<< HEAD
-[ "$logcount" -eq 13 ] || { echo Error: $logcount files in $release/logs but expected 13; exit 2; }
-=======
-[ "$logcount" -eq 15 ] || {
-    echo Error: wrong number $logcount files in $release/logs, expected 15 ;
-=======
 [ -n "$plst" ] || { echo plst not defined in the environment; exit 1; }
 [ `find  -maxdepth 1 -name '*.obs' | wc -l` == 1 ] || {
     echo found too many '*.obs' files; exit 1; }
@@ -43,11 +30,11 @@ expected=$((14 + $nantabs))
     #        (13-14) $ers-difxlog-*.txt (15) $ers-fits-missing.txt
     echo Error: wrong number $logcount files in $release/logs,
     echo '     ' expected $expected based on $nantabs antab files;
->>>>>>> 551aef1a1 (Synchronizing additional fiddly scripting in eht processing.)
     $exit 2 ; }
->>>>>>> 332681ab5 (Synchronized the recent script and drivepolconvert.py)
 
-set -- `$ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs -G`
+[ -z "$uniq" ] &&
+    set -- `$ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs -G` ||
+    set -- `$ehtc/ehtc-joblist.py -i $dout/$evs -o *.obs -G -u`
 while [ $# -ge 4 ]
 do
     eval $2 ; eval $3 ; eval $4 ; shift 4
@@ -85,7 +72,7 @@ done
 logs=$release/logs
 $verb && ls -ld $logs
 [ -d $logs ] || { echo $logs is missing ; $exit 9 ; }
-lf=$logs/$exp-$subv-v${vers}${ctry}p${iter}r${relv}.logfile
+lf=$logs/$exp-$subv-v${vers}${ctry}${stry}p${iter}r${relv}.logfile
 $verb && ls -l $lf
 [ -f $lf ] || { echo $lf is missing ; $exit 10 ; }
 ls=''
