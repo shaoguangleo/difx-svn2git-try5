@@ -28,6 +28,6 @@ USER difx
 WORKDIR /difxsrc/
 USER root
 RUN  exec bash \
-	&& source virtualtrunk/setup.bash \
-	&& python3 virtualtrunk/install-difx ----noipp
+	&& source setup.bash \
+	&& python3 install-difx ----noipp
 USER difx
