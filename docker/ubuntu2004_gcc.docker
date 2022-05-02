@@ -17,7 +17,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     gfortran \
     openmpi-bin \
     doxygen \
-    git
+    git \
+    python3
 
 ADD . /difxsrc
 RUN useradd -ms /bin/bash difx\
@@ -28,5 +29,5 @@ WORKDIR /difxsrc/
 USER root
 RUN  exec bash \
 	&& source virtualtrunk/setup.bash \
-	&& virtualtrunk/install-difx ----noipp
+	&& python3 virtualtrunk/install-difx ----noipp
 USER difx
