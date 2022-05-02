@@ -21,12 +21,12 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 
 ADD . /difxsrc
 RUN useradd -ms /bin/bash difx\
-    && chown difx.difx /difxsrc
-    && git config --global core.longpaths true
+    && chown difx.difx /difxsrc \
+    && git config --global core.longpaths true\
     && git config core.symlinks false
 USER difx
 WORKDIR /difxsrc/
 USER root
-RUN  source virtualtrunk/setup.bash
+RUN  source virtualtrunk/setup.bash \
 	&& virtualtrunk/install-difx ----noipp
 USER difx
