@@ -26,6 +26,7 @@ RUN useradd -ms /bin/bash difx\
 USER difx
 WORKDIR /difxsrc/
 USER root
-RUN  source virtualtrunk/setup.bash \
+RUN  exec bash \
+	&& source virtualtrunk/setup.bash \
 	&& virtualtrunk/install-difx ----noipp
 USER difx
