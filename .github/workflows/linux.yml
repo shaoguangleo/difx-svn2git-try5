@@ -2,7 +2,7 @@ name: Linux
 
 on:
   push:
-    branches: [ master ]
+    branches: [ D261 ]
   pull_request:
     branches: [ master ]
 
